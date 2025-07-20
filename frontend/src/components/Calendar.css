@@ -1,0 +1,30 @@
+/* src/components/Calendar.css */
+
+/* kontener kalendarza */
+.calendar-container {
+  max-width: 400px;
+  margin: 0 auto;
+  font-family: Arial, sans-serif;
+}
+
+/* cała tabela kalendarza */
+.calendar {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+/* komórki i nagłówki */
+.calendar th,
+.calendar td {
+  border: 1px solid #f2eeee;
+  padding: 8px;
+  text-align: center;
+}
+
+/* specjalny styl dla nagłówka z dniami tygodnia */
+.calendar th {
+  background-color: #963d3d;
+  font-weight: bold;
+}
+
+
