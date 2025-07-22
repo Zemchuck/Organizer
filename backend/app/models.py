@@ -1,10 +1,6 @@
-
+from app.db import Base 
 from sqlalchemy import Column, Integer, String, Text, DateTime
-from sqlalchemy.orm import declarative_base
 
-Base = declarative_base()
-
-#Tabela wpisów kalendarza
 class CalendarEntry(Base):
     __tablename__ = "calendar_entries"
     
