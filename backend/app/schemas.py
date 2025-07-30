@@ -28,4 +28,4 @@ class CalendarEntryRead(BaseModel):
     location: Optional[str] = None
 
     class Config:
-        orm_mode = True  # Enables compatibility with SQLAlchemy models
+        from_atributes = True  # Enable reading from ORM models

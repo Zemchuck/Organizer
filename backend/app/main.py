@@ -1,14 +1,21 @@
 from fastapi import FastAPI, Depends
+from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 from typing import List
-from . import models, schemas
-from db import get_db
-from schemas import CalendarEntryCreate, CalendarEntryRead
-from models import CalendarEntry
+
+from app import models, schemas
+from app.db import get_db
+from app.models import CalendarEntry
+from app.schemas import CalendarEntryCreate, CalendarEntryRead
+
 
 app = FastAPI(title="Organizer API")
 
-
+app.add_middleware(CORSMiddleware,               
+    allow_origins=["http://localhost:5173"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],)
 
 
 @app.get("/", response_model=List[CalendarEntryRead])
@@ -24,6 +31,5 @@ def create_entry(entry: CalendarEntryCreate, db: Session = Depends(get_db)):
     db.add(entry_model)
     db.commit()
     db.refresh(entry_model)
-    db.close()
     return entry_model
    
