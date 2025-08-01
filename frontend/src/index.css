@@ -143,10 +143,21 @@ body {
   text-align: center;
 }
 .month-table__cell.today {
-  background: var(--purple);
-  color: var(--graphite);
+  background: var(--panel);
+  color: var(--turquoise);
   font-weight: 700;
+  border: 2px solid var(--turquoise);
+  box-shadow: 0 0 6px var(--turquoise);
 }
+
+/* Dzisiejszy dzień we widoku tygodnia (gdy będzie dodany 'today' w JSX) */
+.week-cell.today {
+  background: var(--panel);
+  color: var(--turquoise);
+  border: 2px solid var(--turquoise);
+  box-shadow: 0 0 6px var(--turquoise);
+}
+
 .month-table__cell:hover:not(.empty),
 .week-day-cell:hover:not(.empty) {
   background: rgba(0, 229, 255, 0.12);
@@ -196,4 +207,88 @@ body {
 }
 .task-form button:active {
   transform: scale(0.96);
+}
+
+/* -------------------------------------------------------
+   components/MonthTable.css – spójny motyw
+   ------------------------------------------------------- */
+.month-table {
+  color: var(--white);
+}
+
+.month-table__grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+}
+
+.month-table__head {
+  text-align: center;
+  font-weight: 600;
+  padding: 8px 0;
+  background: var(--panel);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: var(--turquoise);
+}
+
+.month-table__cell {
+  min-height: 90px;
+  padding: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: var(--panel);
+  transition: background 0.15s;
+  font-size: 0.9rem;
+  text-align: center;
+}
+
+.day-header {
+  display: flex;
+  flex-direction: column;      /* dwie linie: nazwa + data */
+  justify-content: center;     /* pionowe wyśrodkowanie */
+  align-items: center;
+  padding: 0;                  /* usuwa nadmiar odstępu */
+  line-height: 1.1;
+}
+
+/* === UI: przycisk " + Dodaj zadanie" === „+ Dodaj zadanie” === */
+.task-add-btn {
+  all: unset;
+  display: inline-block;
+  padding: 0.55rem 1.2rem;
+  border: 2px solid var(--turquoise);
+  border-radius: 8px;
+  font-family: "Oxanium", sans-serif;
+  font-weight: 600;
+  color: var(--turquoise);
+  cursor: pointer;
+  transition: background 0.2s, box-shadow 0.2s, transform 0.1s;
+}
+.task-add-btn:hover {
+  background: var(--turquoise);
+  color: var(--graphite);
+  box-shadow: 0 0 8px var(--turquoise);
+}
+.task-add-btn:active {
+  transform: scale(0.96);
+}
+
+/* === TaskForm: rozwijane select + disabled, error === */
+.task-form select {
+  background: var(--panel);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 6px;
+  padding: 0.5rem 0.75rem;
+  color: var(--white);
+  flex: 0 1 170px;
+}
+
+.task-form button[disabled] {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.task-error {
+  width: 100%;
+  margin-top: 0.4rem;
+  font-size: 0.8rem;
+  color: #ff6b6b;
 }

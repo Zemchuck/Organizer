@@ -1,32 +1,40 @@
-from app.db import Base 
-from sqlalchemy import Column, Integer, String, Text, DateTime, Enum as SQLEnum
-from datetime import datetime
 import enum
+from datetime import datetime, timedelta
+
+from sqlalchemy import (
+    Column, Integer, String, Text, DateTime,
+    Enum as SQLEnum,
+)
+
+from .db import Base          # ← import bazy
+
 
 class TaskType(enum.Enum):
     single = "single"
-    habit = "habit"
-    
+    habit  = "habit"
+
+
 class Task(Base):
-    __tablename__ = "Tasks"
-    
-    id = Column(Integer, primary_key=True)
-    title = Column(String(200), nullable=False)
+    __tablename__ = "tasks"
+
+    id          = Column(Integer, primary_key=True, index=True)
+    title       = Column(String(200), nullable=False)
     description = Column(Text)
-    time= Column(DateTime, nullable=False)
-    duration = Column(Integer, nullable=False)
-    task_type = Column(
-        SQLEnum(TaskType, name="task_type_enum", native_enum=False)
-        , nullable=False,
-        )
+    time        = Column(DateTime, nullable=False)   # start
+    duration    = Column(Integer, nullable=False)    # minuty
+    task_type   = Column(
+        SQLEnum(TaskType, name="task_type_enum", native_enum=False),
+        nullable=False,
+    )
 
-
-    def __repr__(self):
-        return (f"<Task(id={self.id}, title={self.title!r}, "
-                f"time={self.time}, duration={self.duration}, task_type={self.task_type})>")
-    
+    # wygodne „pole” obliczane:
     @property
     def end_time(self) -> datetime:
-        from datetime import timedelta
-        """Zwraca czas zakończenia zadania."""
         return self.time + timedelta(minutes=self.duration)
+
+    def __repr__(self) -> str:
+        return (
+            f"<Task(id={self.id}, title={self.title!r}, "
+            f"time={self.time}, duration={self.duration}, "
+            f"task_type={self.task_type})>"
+        )

@@ -1,0 +1,50 @@
+.month-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+}
+
+.month-head {
+  text-align: center;
+  font-weight: 600;
+  padding: 6px 0;
+  background: var(--panel);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: var(--turquoise);
+}
+
+/* pojedyncza komórka */
+.month-cell {
+  min-height: 90px;
+  padding: 4px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  position: relative;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.month-cell:hover:not(.empty) {
+  background: rgba(0, 229, 255, 0.12);
+}
+
+/* puste komórki (przed 1-szym / po ostatnim) */
+.month-cell.empty {
+  background: transparent;
+  border: 1px solid transparent;
+  pointer-events: none;
+}
+
+/* dzisiejszy dzień */
+.month-cell.today {
+  border: 2px solid var(--turquoise);
+  box-shadow: 0 0 6px var(--turquoise);
+}
+
+/* mała kropka/licznik zadań */
+.task-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--purple);
+  position: absolute;
+  bottom: 4px;
+  right: 4px;
+}

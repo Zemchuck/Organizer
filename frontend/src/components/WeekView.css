@@ -1,0 +1,77 @@
+/* === WEEK VIEW — Graphite | Neon ===================================== */
+/* Siatka 8 × 25 : 1 kolumna godzin (60 px) + 7 kolumn dni               */
+/*                 1 wiersz nagłówków (40 px) + 24 wiersze godzin        */
+
+/* ---------- GŁÓWNY GRID ---------- */
+.week-grid {
+  display: grid;
+  grid-template-columns: 60px repeat(7, 1fr);
+  grid-template-rows: 40px repeat(24, 40px);
+}
+
+/* pusty lewy górny róg */
+.corner {
+  grid-column: 1;
+  grid-row: 1;
+}
+
+/* ---------- NAGŁÓWKI DNI ---------- */
+.day-header {
+  font-weight: 600;
+  text-align: center;
+  background: var(--panel);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: var(--turquoise);
+  cursor: pointer;
+}
+.day-header.weekend { color: var(--purple); }
+.day-header.today   { border: 2px solid var(--turquoise); }
+
+/* ---------- KOLUMNA GODZIN ---------- */
+.hour-label {
+  font-size: 0.75rem;
+  color: var(--gray);
+  display: flex;
+  justify-content: flex-end;
+  align-items: flex-start;
+  padding-right: 4px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+/* ---------- KOMÓRKI GODZINA×DZIEŃ ---------- */
+.day-cell {
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: var(--panel);
+  overflow-x: auto;
+}
+.day-cell.today { border-color: var(--turquoise); }
+
+/* ---------- PASEK ZADANIA (kolory w index.css) ---------- */
+.task-bar {
+  padding: 4px 6px;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  display: inline-block;
+  margin-right: 4px;
+}
+
+/* ---------- PRZYCISK „Ukryj/Pokaż nawyki” ---------- */
+.habit-toggle-btn {
+  all: unset;
+  display: inline-block;
+  padding: 0.55rem 1.2rem;
+  border: 2px solid var(--turquoise);
+  border-radius: 8px;
+  font-family: "Oxanium", sans-serif;
+  font-weight: 600;
+  color: var(--turquoise);
+  cursor: pointer;
+  transition: background 0.2s, box-shadow 0.2s, transform 0.1s;
+  margin-bottom: 0.6rem;
+}
+.habit-toggle-btn:hover {
+  background: var(--turquoise);
+  color: var(--graphite);
+  box-shadow: 0 0 8px var(--turquoise);
+}
+.habit-toggle-btn:active { transform: scale(0.96); }
