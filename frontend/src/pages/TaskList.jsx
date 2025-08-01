@@ -1,20 +1,11 @@
-import React, { useState, useEffect } from "react";
-import "./TaskList.css";
+import React from "react";
 
-function TaskList() {
-  //Stan zadań
-  const [tasks, setTasks] = useState([]);
-
+// Prosty placeholder – w przyszłości można pobrać zadania z kontekstu/serwera
+export default function TaskList() {
   return (
-    <div className="task-list">
-      <h2>Lista zadań</h2>
-      <ul>
-        {tasks.map((task, index) => (
-          <li key={index}>{task}</li>
-        ))}
-      </ul>
-    </div>
+    <section>
+      <h2>Lista zadań (w budowie)</h2>
+      <p>Tu pojawią się wszystkie zadania po implementacji stanu globalnego.</p>
+    </section>
   );
 }
-
-export default TaskList;

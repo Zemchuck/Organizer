@@ -1,0 +1,35 @@
+.month-table {
+  color: var(--white);
+}
+
+.month-table__grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+}
+
+.month-table__head {
+  text-align: center;
+  font-weight: 600;
+  padding: 8px 0;
+  background: var(--panel);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: var(--turquoise);
+}
+
+.month-table__cell {
+  min-height: 90px;
+  padding: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: var(--panel);
+  transition: background 0.15s;
+  font-size: 0.9rem;
+  text-align: center;
+}
+.month-table__cell.today,
+.week-cell.today {
+  background: var(--panel);
+  color: var(--turquoise);
+  border: 2px solid var(--turquoise);
+  box-shadow: 0 0 6px var(--turquoise);
+  font-weight: 700;
+}

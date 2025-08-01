@@ -1,31 +1,28 @@
+from enum import Enum
 from pydantic import BaseModel
 from datetime import datetime
 from typing import Optional
 
+# 1. Zdefiniuj ten sam enum (możesz importować z models.py lub powtórzyć):
+class TaskType(str, Enum):
+    single = "single"
+    habit  = "habit"
 
-class CalendarEntryCreate(BaseModel):
+class TaskBase(BaseModel):
     title: str
     description: Optional[str] = None
-    start_datetime: datetime
-    end_datetime: Optional[datetime] = None
-    location: Optional[str] = None
+    time: datetime
+    duration: int
+    # 2. Używamy naszego enum jako typ pola:
+    task_type: TaskType
 
+class TaskCreate(TaskBase):
+    pass
 
-class CalendarEntryUpdate(BaseModel):
-    title: Optional[str] = None
-    description: Optional[str] = None
-    start_datetime: Optional[datetime] = None
-    end_datetime: Optional[datetime] = None
-    location: Optional[str] = None
-
-
-class CalendarEntryRead(BaseModel):
+class TaskRead(TaskBase):
     id: int
-    title: str
-    description: Optional[str] = None
-    start_datetime: datetime
-    end_datetime: Optional[datetime] = None
-    location: Optional[str] = None
+    end_time: datetime
 
     class Config:
-        from_atributes = True  # Enable reading from ORM models
+        orm_mode = True
+        from_attributes = True
