@@ -1,0 +1,36 @@
+@import './variables.css';
+
+/* Reset podstawowy */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* Wspólne etykiety godzin */
+.hour-label {
+  font-size: 0.75rem;
+  color: var(--gray);
+  display: flex;
+  align-items: flex-start;
+}
+
+/* Pasek zadania */
+.task-bar {
+  padding: 4px 6px;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  display: inline-block;
+  margin-right: 4px;
+}
+
+.task-bar.single,
+.task-bar.one_time {
+  background: var(--turquoise);
+  color: var(--graphite);
+}
+
+.task-bar.habit {
+  background: var(--purple);
+  color: var(--graphite);
+}

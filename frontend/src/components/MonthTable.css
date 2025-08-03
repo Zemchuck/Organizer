@@ -1,12 +1,13 @@
+@import '../styles/variables.css';
+@import '../styles/utilities.css';
+
 .month-table {
   color: var(--white);
 }
-
 .month-table__grid {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
 }
-
 .month-table__head {
   text-align: center;
   font-weight: 600;
@@ -15,7 +16,6 @@
   border: 1px solid rgba(255, 255, 255, 0.1);
   color: var(--turquoise);
 }
-
 .month-table__cell {
   min-height: 90px;
   padding: 6px;
@@ -25,11 +25,15 @@
   font-size: 0.9rem;
   text-align: center;
 }
-.month-table__cell.today,
-.week-cell.today {
+.month-table__cell.today {
   background: var(--panel);
   color: var(--turquoise);
+  font-weight: 700;
   border: 2px solid var(--turquoise);
   box-shadow: 0 0 6px var(--turquoise);
-  font-weight: 700;
+}
+.month-table__cell.empty {
+  background: transparent;
+  border: 1px solid transparent;
+  pointer-events: none;
 }

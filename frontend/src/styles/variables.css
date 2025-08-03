@@ -1,0 +1,12 @@
+:root {
+  /* Kolory motywu */
+  --graphite: #121212;
+  --turquoise: #00e5ff;
+  --purple: #bb86fc;
+  --gray: #b0bec5;
+  --white: #ffffff;
+  --panel: rgba(255, 255, 255, 0.04);
+
+  /* Wysokość podstawowa */
+  --field-height: 40px;
+}

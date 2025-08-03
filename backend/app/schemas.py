@@ -26,7 +26,7 @@ class TaskCreate(BaseModel):
     title     : str = Field(..., max_length=200)
     date      : date
     time      : time
-    duration  : int = 60
+    duration  : int
     task_type : TaskType
 
 

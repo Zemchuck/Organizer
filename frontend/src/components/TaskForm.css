@@ -1,20 +1,247 @@
-.task-form select {
-  background: var(--panel);
-  border: 1px solid rgba(255,255,255,.12);
-  border-radius: 6px;
-  padding: 0.5rem 0.75rem;
-  color: var(--white);
-  flex: 0 1 170px;
+:root {
+  --panel: #1f242d;
+  --turquoise: #40e0d0;
+  --purple: #a77fff;
+  --graphite: #1f2a37;
+  --gray: #9ca3af;
+
+  /* baza wysokości */
+  --field-height: 40px;
 }
 
-.task-form button[disabled] {
+/* === OGÓLNE ========================================================= */
+.task-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;        /* odstęp dla wszystkich par */
+  margin-top: 2rem;  /* już masz */
+}
+
+
+/* wiersz główny */
+.row-main {
+  display: flex;
+  gap: 0.3rem;
+  flex-wrap: wrap;
+  align-items: flex-end;
+}
+
+/* każda grupa pól */
+.form-group {
+  flex: 1 1 150px;
+  min-width: 120px;
+  display: flex;
+  flex-direction: column;
+  margin-top: 0.1rem;
+}
+
+/* etykiety */
+.field-label {
+  display: inline-flex;
+  align-items: center;
+  font-family: "Oxanium", sans-serif;
+  font-weight: 600;
+  font-style: italic;
+  font-size: 0.8rem;
+  color: var(--purple);      /* ten sam kolor tekstu co aktywny przycisk */
+  background: var(--panel);     /* lub transparent, jeśli wolisz tylko obwódkę */
+  border: 1px none var(--turquoise);
+  border-radius: 6px;
+  padding: 4px 8px;        /* większy odstęp pod etykietą */
+}
+
+.field-label::after {
+  content: ":";
+}
+
+/* tytuł - 2x wysokości */
+.title-field {
+  width: 100%;
+  padding: 0.75rem 0.75rem;
+  background: var(--panel);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 6px;
+  font-size: 1rem;
+  color: inherit;
+  box-sizing: border-box;
+  outline: none;
+  height: 80px;
+  line-height: 1.2;
+}
+
+/* pola jednorzędowe: data, godzina, powtarzaj do */
+.task-form input[type="text"],
+.task-form input[type="date"],
+.time-input,
+.task-form input[type="number"] {
+  background: var(--panel);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 6px;
+  padding: 0 0.75rem;
+  font-size: 0.9rem;
+  color: inherit;
+  width: 100%;
+  box-sizing: border-box;
+  outline: none;
+  appearance: none;
+  height: var(--field-height);
+  line-height: 1.1;
+  display: flex;
+  align-items: center;
+}
+
+/* focus */
+.task-form input:focus,
+.custom-select-button:focus {
+  border-color: var(--turquoise);
+  box-shadow: 0 0 6px rgba(64, 224, 208, 0.5);
+}
+
+/* repeat row: dni + powtarzaj do */
+.repeat-row {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  margin-bottom: 0.5rem;
+}
+
+/* dni tygodnia */
+.weekday-picker {
+  display: flex;
+  gap: 0.4rem;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+}
+.weekday-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--gray);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s, box-shadow 0.2s, border-color 0.2s;
+  box-sizing: border-box;
+}
+.weekday-btn input {
+  display: none;
+}
+.weekday-btn:hover {
+  border-color: var(--turquoise);
+}
+.weekday-btn.active {
+  background: var(--turquoise);
+  color: var(--graphite);
+  box-shadow: 0 0 6px var(--turquoise);
+  border-color: var(--turquoise);
+}
+
+/* toggle powtarzania */
+.repeat-toggle {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.85rem;
+}
+.repeat-toggle input {
+  accent-color: var(--turquoise);
+}
+
+/* custom dropdown Typ zadania */
+.custom-select {
+  position: relative;
+  width: 100%;
+  font-size: 0.9rem;
+  user-select: none;
+}
+.custom-select-button {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: var(--panel);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 6px;
+  padding: 0 0.75rem;
+  cursor: pointer;
+  gap: 0.5rem;
+  width: 100%;
+  box-sizing: border-box;
+  color: inherit;
+  height: var(--field-height);
+}
+.custom-select-button:focus {
+  outline: 2px solid var(--turquoise);
+}
+.custom-select-list {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  background: var(--panel);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 6px;
+  margin: 0;
+  padding: 4px 0;
+  z-index: 300;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.5);
+  max-height: 220px;
+  overflow-y: auto;
+}
+.custom-select-item {
+  padding: 8px 12px;
+  cursor: pointer;
+  white-space: nowrap;
+  font-size: 0.9rem;
+  color: inherit;
+  transition: background 0.15s;
+}
+.custom-select-item:hover,
+.custom-select-item.active {
+  background: rgba(64, 224, 208, 0.1);
+}
+
+/* przycisk Dodaj */
+.row-bottom {
+  display: flex;
+  justify-content: center;
+  padding-top: 0.25rem;
+}
+.button-wrapper {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+}
+.submit-btn {
+  padding: 0.55rem 1.2rem;
+  border: none;
+  border-radius: 6px;
+  background: linear-gradient(135deg, var(--purple), var(--turquoise));
+  color: var(--graphite);
+  font-family: "Oxanium", sans-serif;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.1s, filter 0.2s;
+  min-width: 150px;
+}
+.submit-btn:hover {
+  filter: brightness(1.1);
+}
+.submit-btn:active {
+  transform: scale(0.96);
+}
+.submit-btn:disabled {
   opacity: 0.6;
   cursor: not-allowed;
 }
 
+/* błąd */
 .task-error {
-  width: 100%;
-  margin-top: 0.4rem;
   font-size: 0.8rem;
   color: #ff6b6b;
+  margin-top: 4px;
 }

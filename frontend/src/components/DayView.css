@@ -1,56 +1,52 @@
+@import '../styles/variables.css';
+@import '../styles/utilities.css';
+
+@import '../styles/variables.css';
+@import '../styles/utilities.css';
+
+/* Kontener dnia: flex z dwiema kolumnami */
 .day-view-container {
   display: flex;
 }
 
-/* Lewa kolumna z godzinami */
+/* Kolumna z godzinami */
 .hours-column {
   width: 60px;
   display: flex;
   flex-direction: column;
 }
 
-.hour-label {
-  height: 40px;               /* 1 rząd = 40 px */
+/* 
+  Etykieta godziny:
+  - ta sama wysokość co slot z zadaniami
+  - wyrównanie do prawej
+*/
+.hours-column .hour-label {
+  height: var(--field-height);
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding-right: 0.5rem;
+  box-sizing: border-box;
   font-size: 0.75rem;
   color: var(--gray);
-  display: flex;
-  align-items: flex-start;
 }
 
-/* Prawa kolumna zadań */
+/* Kolumna ze slotami zadań */
 .tasks-column {
   flex: 1;
   display: flex;
   flex-direction: column;
 }
 
+/* Pojedynczy slot godziny */
 .hour-slot {
-  height: 40px;               /* dopasowane do .hour-label */
+  height: var(--field-height);
   position: relative;
   border-bottom: 1px solid rgba(255, 255, 255, 0.06);
 }
 
-/* Pasek zadania */
-.task-bar {
-  padding: 4px 6px;
-  border-radius: 4px;
-  font-size: 0.8rem;
-  display: inline-block;
-  margin-right: 4px;
-}
-
-/* Kolory zależne od typu */
-.task-bar.single,
-.task-bar.one_time {
-  background: var(--turquoise);
-  color: var(--graphite);
-}
-
-.task-bar.habit {
-  background: var(--purple);
-  color: var(--graphite);
-}
-
+/* Komunikat gdy brak zadań */
 .no-tasks {
   margin-top: 1rem;
   color: var(--gray);
