@@ -1,7 +1,9 @@
+/* ✅ Import Google Fonts */
 @import url("https://fonts.googleapis.com/css2?family=Oxanium:wght@600&family=Poppins:wght@400;600&display=swap");
 @import './styles/variables.css';
 @import './styles/utilities.css';
 
+/* 🔹 Styl bazowy */
 body {
   font-family: "Poppins", sans-serif;
   min-height: 100vh;
@@ -9,12 +11,14 @@ body {
   color: var(--white);
 }
 
+/* 🔹 Kontener aplikacji */
 .app {
   max-width: 1100px;
   margin: 0 auto;
   padding: 3rem 1rem;
 }
 
+/* 🔹 Kalendarz */
 .calendar {
   background: var(--panel);
   backdrop-filter: blur(6px);
@@ -23,16 +27,17 @@ body {
   padding: 1.5rem;
 }
 
+/* 🔹 Nagłówek kalendarza */
 .calendar__header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 1.5rem;
+  margin: 1.5rem 0;
   flex-wrap: wrap;
   gap: 1rem;
-  margin: 1.5rem 0;
 }
 
+/* 🔹 Nawigacja */
 .calendar__nav button {
   all: unset;
   display: inline-flex;
@@ -52,44 +57,39 @@ body {
   color: var(--graphite);
   box-shadow: 0 0 10px var(--purple);
 }
-.calendar__nav button:active {
-  transform: scale(0.95);
-}
+.calendar__nav button:active { transform: scale(0.95); }
 
+/* 🔹 Tytuł kalendarza */
 .calendar__title {
   font-family: "Oxanium", sans-serif;
   font-weight: 600;
   font-size: 1.6rem;
-  letter-spacing: 0.5px;
   background: linear-gradient(90deg, var(--turquoise), var(--purple));
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
   text-shadow: 0 0 8px rgba(0, 0, 0, 0.85);
-  margin-left: 0.4rem;
-  margin-right: 0.4rem;
 }
 
+/* 🔹 Przełącznik widoków */
 .calendar__view-switch button {
   all: unset;
   border: 1px solid var(--purple);
   padding: 0.7rem 1rem;
-  margin: 0 0.15rem;
   border-radius: 22px;
   cursor: pointer;
   font-size: 0.9rem;
   transition: background 0.2s, color 0.2s, border-color 0.2s;
-  color: var(--White);
+  color: var(--white);
 }
-.calendar__view-switch button:hover {
-  background: var(--panel);
-}
+.calendar__view-switch button:hover { background: var(--panel); }
 .calendar__view-switch button.active {
   background: linear-gradient(90deg, var(--turquoise), var(--purple));
   color: var(--white);
   border-color: var(--purple);
 }
 
+/* 🔹 Przycisk dodawania zadań */
 .task-add-btn {
   all: unset;
   display: inline-block;
@@ -108,6 +108,85 @@ body {
   color: var(--graphite);
   box-shadow: 0 0 8px var(--turquoise);
 }
-.task-add-btn:active {
-  transform: scale(0.96);
+.task-add-btn:active { transform: scale(0.96); }
+
+/* ✅ Nawigacja do nowych stron */
+.menu {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+.menu a {
+  text-decoration: none;
+  color: var(--white);
+  border: 1px solid var(--purple);
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  font-family: "Oxanium", sans-serif;
+  font-weight: 600;
+  transition: background 0.2s, color 0.2s;
+}
+.menu a:hover {
+  background: linear-gradient(90deg, var(--turquoise), var(--purple));
+  color: var(--graphite);
+}
+
+/* ✅ Statystyki nawyków */
+.stats-container {
+  background: var(--panel);
+  border-radius: 12px;
+  padding: 1.5rem;
+  max-width: 400px;
+  margin: 2rem auto;
+  color: var(--white);
+  text-align: center;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+}
+.stats-container h2 { font-family: "Oxanium", sans-serif; margin-bottom: 1rem; }
+.progress-bar {
+  background: rgba(255,255,255,0.1);
+  border-radius: 6px;
+  overflow: hidden;
+  height: 20px;
+  margin-top: 10px;
+}
+.progress {
+  background: var(--turquoise);
+  color: var(--graphite);
+  font-weight: 600;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ✅ Macierz Eisenhowera */
+.matrix {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  max-width: 900px;
+  margin: 2rem auto;
+}
+.quadrant {
+  background: var(--panel);
+  border-radius: 8px;
+  padding: 1rem;
+  color: var(--white);
+  border: 1px solid rgba(255,255,255,0.15);
+  box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+}
+.quadrant h3 { margin-bottom: 4px; font-family: "Oxanium", sans-serif; }
+.quadrant small { color: var(--gray); display: block; margin-bottom: 8px; }
+.quadrant ul { list-style: none; padding: 0; }
+.quadrant li { padding: 4px 0; border-bottom: 1px solid rgba(255,255,255,0.05); }
+.quadrant li.completed { text-decoration: line-through; opacity: 0.6; }
+
+.q1 { border-left: 5px solid #ff4c4c; }
+.q2 { border-left: 5px solid #ffa500; }
+.q3 { border-left: 5px solid #40e0d0; }
+.q4 { border-left: 5px solid #9ca3af; }
+
+@media (max-width: 600px) {
+  .matrix { grid-template-columns: 1fr; }
 }

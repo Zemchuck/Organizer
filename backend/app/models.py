@@ -1,40 +1,28 @@
+from sqlalchemy import Column, Integer, String, Boolean, Text, DateTime, Enum as SqlEnum
 import enum
-from datetime import datetime, timedelta
+from datetime import datetime
 
-from sqlalchemy import (
-    Column, Integer, String, Text, DateTime,
-    Enum as SQLEnum,
-)
+from app.db import Base
 
-from .db import Base          # ← import bazy
+class PriorityEnum(int, enum.Enum):
+    URGENT_IMPORTANT         = 1   # pilne-ważne
+    IMPORTANT_NOT_URGENT     = 2
+    URGENT_NOT_IMPORTANT     = 3
+    NOT_URGENT_NOT_IMPORTANT = 4
 
-
-class TaskType(enum.Enum):
-    single = "single"
-    habit  = "habit"
-
+class TaskTypeEnum(str, enum.Enum):
+    SINGLE = "single"   # jednorazowe
+    HABIT  = "habit"
 
 class Task(Base):
     __tablename__ = "tasks"
 
     id          = Column(Integer, primary_key=True, index=True)
-    title       = Column(String(200), nullable=False)
-    description = Column(Text)
-    time        = Column(DateTime, nullable=False)   # start
-    duration    = Column(Integer, nullable=False)    # minuty
-    task_type   = Column(
-        SQLEnum(TaskType, name="task_type_enum", native_enum=False),
-        nullable=False,
-    )
-
-    # wygodne „pole” obliczane:
-    @property
-    def end_time(self) -> datetime:
-        return self.time + timedelta(minutes=self.duration)
-
-    def __repr__(self) -> str:
-        return (
-            f"<Task(id={self.id}, title={self.title!r}, "
-            f"time={self.time}, duration={self.duration}, "
-            f"task_type={self.task_type})>"
-        )
+    title       = Column(String(255), nullable=False)
+    description = Column(Text, nullable=True)
+    priority    = Column(SqlEnum(PriorityEnum), nullable=False, default=PriorityEnum.NOT_URGENT_NOT_IMPORTANT)
+    status      = Column(Boolean, nullable=False, default=False)
+    task_type   = Column(SqlEnum(TaskTypeEnum), nullable=False, default=TaskTypeEnum.SINGLE)
+    color       = Column(String(7), nullable=False, default="#CCCCCC")
+    time        = Column(DateTime, nullable=False, default=datetime.utcnow)   # start
+    duration    = Column(Integer, nullable=False, default=60)                 # minuty

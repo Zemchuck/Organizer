@@ -1,53 +1,73 @@
 @import '../styles/variables.css';
 @import '../styles/utilities.css';
 
-@import '../styles/variables.css';
-@import '../styles/utilities.css';
-
-/* Kontener dnia: flex z dwiema kolumnami */
-.day-view-container {
-  display: flex;
-}
-
-/* Kolumna z godzinami */
-.hours-column {
-  width: 60px;
-  display: flex;
-  flex-direction: column;
-}
-
-/* 
-  Etykieta godziny:
-  - ta sama wysokość co slot z zadaniami
-  - wyrównanie do prawej
-*/
-.hours-column .hour-label {
-  height: var(--field-height);
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  padding-right: 0.5rem;
-  box-sizing: border-box;
-  font-size: 0.75rem;
-  color: var(--gray);
-}
-
-/* Kolumna ze slotami zadań */
-.tasks-column {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-}
-
-/* Pojedynczy slot godziny */
-.hour-slot {
-  height: var(--field-height);
+.day-grid {
+  display: grid;
+  grid-template-columns: 60px 1fr;
+  grid-template-rows: calc(var(--field-height) * 1.5) repeat(24, var(--field-height));
+  height: calc(100vh - var(--header-height, 128px));
+  overflow-y: auto;
   position: relative;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
 }
 
-/* Komunikat gdy brak zadań */
-.no-tasks {
-  margin-top: 1rem;
+.corner {
+  grid-column: 1;
+  grid-row: 1;
+  background: var(--panel);
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+  border-right: 1px solid rgba(255,255,255,0.06);
+}
+
+.day-header {
+  grid-column: 2;
+  grid-row: 1;
+  background: var(--panel);
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+  text-align: center;
+  font-weight: 600;
+  color: var(--turquoise);
+  padding: 4px;
+}
+
+.day-cell {
+  position: relative;
+  grid-column: 2;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+  border-left: 1px solid rgba(255,255,255,0.06);
+  background: var(--panel);
+}
+
+.task-block {
+  position: absolute;
+  left: 4px;
+  right: 4px;
+  border-radius: 4px;
+  padding: 4px 6px;
+  font-size: 0.8rem;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  overflow: hidden;
+  color: var(--graphite);
+}
+.task-block.completed { opacity: 0.6; text-decoration: line-through; }
+
+.task-label { display: flex; flex-direction: column; gap: 2px; width: 100%; }
+.task-title { font-weight: 600; }
+.task-desc  { font-size: 0.7rem; font-style: italic; color: var(--gray); }
+
+.task-block input[type="checkbox"] {
+  transform: scale(1.2);
+  margin-right: 4px;
+}
+
+.no-tasks-overlay {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
   color: var(--gray);
+  font-size: 1rem;
+  opacity: 0.7;
+  pointer-events: none;
 }

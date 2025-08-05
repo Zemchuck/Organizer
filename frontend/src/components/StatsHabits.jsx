@@ -1,0 +1,1 @@
+export default function StatsHabits() { return <h1>Statystyki</h1>; }

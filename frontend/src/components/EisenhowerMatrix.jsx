@@ -1,0 +1,1 @@
+export default function EisenhowerMatrix() { return <h1>Macierz</h1>; }

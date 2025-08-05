@@ -1,38 +1,28 @@
 // src/components/Calendar.jsx
 import React, { useEffect, useState } from "react";
-import DayView   from "./DayView";
-import WeekView  from "./WeekView";
 import MonthView from "./MonthView";
+import WeekView  from "./WeekView";
+import DayView   from "./DayView";
 import TaskForm  from "./TaskForm";
+import { mondayOf } from "../helpers/date";
 
 const VIEWS = { DAY: "day", WEEK: "week", MONTH: "month" };
 
 export default function Calendar() {
   /* ---------- STANY ---------- */
-  const [view, setView] = useState(
-    () => localStorage.getItem("preferredView") || VIEWS.MONTH
+  const [view, setView] = useState(() =>
+    localStorage.getItem("preferredView") || VIEWS.MONTH
   );
   const [currentDate, setCurrentDate] = useState(() => {
     const d = new Date();
-    return view === VIEWS.WEEK ? getMonday(d) : d;
+    return view === VIEWS.WEEK ? mondayOf(d) : d;
   });
-
-  /* formularz „+ Dodaj” */
   const [showForm, setShowForm] = useState(false);
 
-  /* ---------- PERSIST VIEW ---------- */
+  /* ---------- ZAPAMIĘTUJEMY WIDOK ---------- */
   useEffect(() => {
     localStorage.setItem("preferredView", view);
   }, [view]);
-
-  /* ---------- HELPERS ---------- */
-  function getMonday(date) {
-    const d = new Date(date);
-    const day = d.getDay() || 7; // 0→7
-    if (day !== 1) d.setDate(d.getDate() - day + 1);
-    d.setHours(0, 0, 0, 0);
-    return d;
-  }
 
   /* ---------- NAWIGACJA ---------- */
   const goPrev = () => {
@@ -56,7 +46,6 @@ export default function Calendar() {
     switch (view) {
       case VIEWS.DAY:
         return <DayView date={currentDate} />;
-
       case VIEWS.WEEK:
         return (
           <WeekView
@@ -67,8 +56,6 @@ export default function Calendar() {
             }}
           />
         );
-
-      case VIEWS.MONTH:
       default:
         return (
           <MonthView
@@ -85,7 +72,6 @@ export default function Calendar() {
   /* ---------- JSX ---------- */
   return (
     <div className="calendar">
-      {/* ---------- NAGŁÓWEK ---------- */}
       <header className="calendar__header">
         <div className="calendar__nav">
           <button onClick={goPrev}>«</button>
@@ -99,7 +85,6 @@ export default function Calendar() {
           <button onClick={goNext}>»</button>
         </div>
 
-        {/* ---------- PRZEŁĄCZNIK WIDOKÓW ---------- */}
         <div className="calendar__view-switch">
           <button
             onClick={() => setView(VIEWS.DAY)}
@@ -110,7 +95,7 @@ export default function Calendar() {
 
           <button
             onClick={() => {
-              setCurrentDate(getMonday(currentDate));
+              setCurrentDate(mondayOf(currentDate));
               setView(VIEWS.WEEK);
             }}
             className={view === VIEWS.WEEK ? "active" : ""}
@@ -136,18 +121,14 @@ export default function Calendar() {
         {showForm ? "✕ Zamknij" : "+ Dodaj zadanie"}
       </button>
 
-      {/* ---------- WIDOK (DAY/WEEK/MONTH) ---------- */}
+      {/* ---------- WIDOK ---------- */}
       {renderView()}
 
       {/* ---------- FORMULARZ ---------- */}
       {showForm && (
         <TaskForm
           defaultDate={currentDate}
-          onAdded={() => {
-            /* po dodaniu odświeżamy widok – tworzymy nowy obiekt Date,
-               żeby useEffect w widokach odczytał zmianę */
-            setCurrentDate((d) => new Date(d));
-          }}
+          onAdded={() => setCurrentDate((d) => new Date(d))}
           onClose={() => setShowForm(false)}
         />
       )}

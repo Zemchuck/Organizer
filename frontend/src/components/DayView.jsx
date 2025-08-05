@@ -1,35 +1,100 @@
-import React, { useEffect, useState, useMemo } from "react";
+// src/components/DayView.jsx
+import React, { useEffect, useMemo, useState } from "react";
 import "./DayView.css";
+import { toLocalISO } from "../helpers/date";
 
 export default function DayView({ date }) {
+  const isoDate = toLocalISO(date);
   const [tasks, setTasks] = useState([]);
-  const isoDate = date.toISOString().slice(0,10);
+  const [showHabits, setShowHabits] = useState(true);
 
-  useEffect(() => {
-    (async()=>{ try {
-      const res=await fetch(`http://localhost:8000/tasks?start_date=${isoDate}&end_date=${isoDate}`);
-      const data=await res.json(); setTasks(data);
-    } catch { setTasks([]); } })();
-  },[isoDate]);
+  /* ---------- TASKI ---------- */
+  useEffect(() => { loadTasks(); }, [isoDate]);
 
-  const hours = useMemo(() => [...Array(24).keys()],[]);
-  const tasksByHour = useMemo(() => {
-    const map=Object.fromEntries(hours.map(h=>[h,[]]));
-    tasks.forEach(t=>{ const h=new Date(t.time).getHours(); map[h]?.push(t); });
-    return map;
-  },[tasks,hours]);
+  async function loadTasks() {
+    try {
+      const res = await fetch(`http://localhost:8000/tasks?start_date=${isoDate}&end_date=${isoDate}`);
+      if (!res.ok) throw new Error();
+      setTasks(await res.json());
+    } catch { setTasks([]); }
+  }
+
+  async function toggleStatus(task) {
+    try {
+      await fetch(`http://localhost:8000/tasks/${task.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: !task.status }),
+      });
+      setTasks((prev) => prev.map((t) => (t.id === task.id ? { ...t, status: !t.status } : t)));
+    } catch (e) { console.error(e); }
+  }
+
+  async function deleteTask(id) {
+    try {
+      await fetch(`http://localhost:8000/tasks/${id}`, { method: "DELETE" });
+      setTasks((prev) => prev.filter((t) => t.id !== id));
+    } catch (e) { console.error(e); }
+  }
+
+  /* ---------- LAYOUT ---------- */
+  const hours       = useMemo(() => [...Array(24).keys()], []);
+  const fieldHeight = parseInt(
+    getComputedStyle(document.documentElement).getPropertyValue("--field-height")
+  );
+  const tasksToDisplay = tasks.filter((t) => showHabits || t.task_type !== "habit");
 
   return (
-    <div className="day-view-container">
-      <div className="hours-column">
-        {hours.map(h=>(<div key={h} className="hour-label">{h}:00</div>))}
+    <>
+      <button className="habit-toggle-btn" onClick={() => setShowHabits((v) => !v)}>
+        {showHabits ? "Ukryj nawyki" : "Pokaż nawyki"}
+      </button>
+
+      <div className="day-grid">
+        <div className="corner"></div>
+        <div className="day-header">
+          {date.toLocaleDateString("pl-PL", { weekday: "long", day: "numeric", month: "long" })}
+        </div>
+
+        {hours.map((h) => (
+          <div key={h} className="hour-label" style={{ gridColumn: 1, gridRow: h + 2 }}>
+            {h}:00
+          </div>
+        ))}
+
+        {hours.map((h) => (
+          <div key={h} className="day-cell" style={{ gridColumn: 2, gridRow: h + 2 }}>
+            {tasksToDisplay
+              .filter((t) => new Date(t.time).getHours() === h)
+              .map((task) => {
+                const start  = new Date(task.time);
+                const top    = (start.getMinutes() / 60) * fieldHeight;
+                const height = Math.ceil(task.duration / 60) * fieldHeight;
+                return (
+                  <div
+                    key={task.id}
+                    className={`task-block ${task.status ? "completed" : ""}`}
+                    style={{ backgroundColor: task.color, top: `${top}px`, height: `${height}px` }}
+                  >
+                    <label className="task-label">
+                      <input type="checkbox" checked={task.status} onChange={() => toggleStatus(task)} />
+                      <span className="task-title">{task.title}</span>
+                      <button
+                        type="button"
+                        className="delete-btn"
+                        aria-label="Usuń"
+                        onClick={() => deleteTask(task.id)}
+                      >
+                        🗑
+                      </button>
+                      {task.description && <span className="task-desc">{task.description}</span>}
+                    </label>
+                  </div>
+                );
+              })}
+          </div>
+        ))}
       </div>
-      <div className="tasks-column">
-        {hours.map(h=>(<div key={h} className="hour-slot">
-          {tasksByHour[h].map(task=>(<div key={task.id} className="task-bar" style={{backgroundColor:task.color, color:'var(--graphite)'}}>{task.title}</div>))}
-        </div>))}
-        {tasks.length===0 && <div className="no-tasks">Brak zadań w tym dniu</div>}
-      </div>
-    </div>
+    </>
   );
 }

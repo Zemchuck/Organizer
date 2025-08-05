@@ -1,36 +1,52 @@
-from datetime     import date, time, datetime
-from typing       import Optional
-from enum         import Enum
-from pydantic     import BaseModel, Field
+from datetime import date as ddate, datetime, time as dtime
+from pydantic import BaseModel, Field, validator
+from typing import Optional, List
+from enum import Enum
 
+class PriorityEnum(int, Enum):
+    urgent_important         = 1
+    important_not_urgent     = 2
+    urgent_not_important     = 3
+    not_urgent_not_important = 4
 
-class TaskType(str, Enum):
+class TaskTypeEnum(str, Enum):
     single = "single"
     habit  = "habit"
 
-
-# ———  pełny model, używany w odpowiedziach  ———
 class TaskBase(BaseModel):
-    title       : str
-    description : Optional[str] = None
-    duration    : int
-    time        : datetime
-    task_type   : TaskType
+    title: Optional[str]       = None
+    description: Optional[str] = None
+    priority: Optional[PriorityEnum]  = None
+    task_type: Optional[TaskTypeEnum] = None
+    color: Optional[str]       = None
+    status: Optional[bool]     = None
 
-    class Config:
-        from_attributes = True   # Pydantic v2 (zamiennik orm_mode)
+class TaskCreate(TaskBase):
+    date: ddate
+    time: dtime
+    duration: int = Field(gt=0, le=1440)
+    repeat_days: Optional[List[int]] = None   # 0=pon, …, 6=niedz.
+    repeat_until: Optional[ddate]    = None
 
+    @validator("priority", pre=True)
+    def _pri_to_enum(cls, v):
+        return PriorityEnum(v)
 
-# ———  dane przy POST  ———
-class TaskCreate(BaseModel):
-    title     : str = Field(..., max_length=200)
-    date      : date
-    time      : time
-    duration  : int
-    task_type : TaskType
+class TaskUpdate(BaseModel):
+    title: Optional[str]       = None
+    description: Optional[str] = None
+    priority: Optional[PriorityEnum]  = None
+    task_type: Optional[TaskTypeEnum] = None
+    color: Optional[str]       = None
+    status: Optional[bool]     = None
+    task_date: Optional[ddate] = None
+    time: Optional[dtime]      = None
+    duration: Optional[int]    = None
 
-
-# ———  dane w odpowiedziach  ———
 class TaskRead(TaskBase):
-    id       : int
-    end_time : datetime
+    id: int
+    time: datetime
+    duration: int
+    model_config = {
+        "from_attributes": True  # Pydantic V2 zamiast orm_mode
+    }

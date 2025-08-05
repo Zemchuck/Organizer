@@ -1,13 +1,13 @@
 @import './variables.css';
 
-/* Reset podstawowy */
+/* ✅ Reset podstawowy */
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
 }
 
-/* Wspólne etykiety godzin */
+/* ✅ Wspólne etykiety godzin */
 .hour-label {
   font-size: 0.75rem;
   color: var(--gray);
@@ -15,22 +15,82 @@
   align-items: flex-start;
 }
 
-/* Pasek zadania */
-.task-bar {
+/* ------------------------------------------------------------------ */
+/* 🔹 PRZYCISKI GLOBALNE                                             */
+/* ------------------------------------------------------------------ */
+
+/* Toggle nawyków (Month / Week / Day) */
+.habit-toggle-btn {
+  all: unset;
+  display: inline-block;
+  padding: 0.6rem 1.2rem;
+  border: 2px solid var(--purple);
+  border-radius: 8px;
+  font-family: "Oxanium", sans-serif;
+  font-weight: 600;
+  color: var(--white);
+  cursor: pointer;
+  transition: background 0.2s, box-shadow 0.2s, transform 0.1s;
+  margin: 0 0.5rem 0.6rem 0.6rem;
+}
+.habit-toggle-btn:hover {
+  background: linear-gradient(90deg, var(--turquoise), var(--purple));
+  color: var(--graphite);
+  box-shadow: 0 0 8px var(--turquoise);
+}
+
+/* Ikonka kosza przy zadaniu */
+.delete-btn {
+  all: unset;
+  cursor: pointer;
+  margin-left: 0.4rem;
+  font-size: 0.8rem;
+}
+.delete-btn:hover { opacity: 0.7; }
+
+/* ------------------------------------------------------------------ */
+/* 🔹 BLOKI ZADAŃ                                                    */
+/* ------------------------------------------------------------------ */
+.task-bar,
+.task-block {
   padding: 4px 6px;
   border-radius: 4px;
   font-size: 0.8rem;
-  display: inline-block;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  color: var(--graphite);
+  position: relative;
+  overflow: hidden;
+}
+
+.task-title { font-weight: 600; }
+.task-desc  { font-size: 0.7rem; font-style: italic; color: var(--gray); }
+
+/* Kolory domyślne */
+.task-bar.single,
+.task-bar.one_time { background: var(--turquoise); }
+.task-bar.habit    { background: var(--purple);   opacity: 0.5; }
+
+/* Ukończone */
+.completed,
+.task-block.completed { text-decoration: line-through; color: #888; opacity: 0.6; }
+
+/* Powiększony checkbox */
+.task-bar input[type="checkbox"],
+.task-block input[type="checkbox"] {
+  transform: scale(1.2);
   margin-right: 4px;
 }
 
-.task-bar.single,
-.task-bar.one_time {
-  background: var(--turquoise);
-  color: var(--graphite);
-}
+/* Priorytety – ikony */
+.P1::before { content: "‼ "; color: #ff4c4c; font-weight: bold; }
+.P2::before { content: "⭐ "; color: #ffa500; }
+.P3::before { content: "⌛ "; color: #40e0d0; }
+.P4::before { content: "✕ "; color: #9ca3af; }
 
-.task-bar.habit {
-  background: var(--purple);
-  color: var(--graphite);
-}
+/* Pasek priorytetu */
+.priority-high   { border-left: 4px solid #ff4c4c; }
+.priority-medium { border-left: 4px solid #ffa500; }
+.priority-low    { border-left: 4px solid #40e0d0; }
+.priority-none   { border-left: 4px solid #9ca3af; }
