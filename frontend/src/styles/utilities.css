@@ -94,3 +94,24 @@
 .priority-medium { border-left: 4px solid #ffa500; }
 .priority-low    { border-left: 4px solid #40e0d0; }
 .priority-none   { border-left: 4px solid #9ca3af; }
+
+.delete-btn {
+  all: unset;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  cursor: pointer;
+  margin-left: 0.5rem;
+  font-size: 0.8rem;
+  padding: 2px 6px;
+  border: 1px solid var(--purple);
+  border-radius: 4px;
+  color: var(--white);
+  background: rgba(155, 93, 229, 0.25); /* pół‑transparentny fiolet */
+  transition: background 0.2s, transform 0.1s;
+}
+.delete-btn:hover {
+  background: linear-gradient(90deg, var(--turquoise), var(--purple));
+  color: var(--graphite);
+}
+.delete-btn:active { transform: scale(0.95); }
