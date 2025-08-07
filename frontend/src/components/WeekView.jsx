@@ -1,90 +1,52 @@
-// src/components/WeekView.jsx
 import React, { useEffect, useMemo, useState } from "react";
 import "./WeekView.css";
 import { toLocalISO, mondayOf } from "../helpers/date";
+import TaskPopover from "./TaskPopover";
 
-export default function WeekView({ date, enterDayView, showHabits = true }) {
+export default function WeekView({ date, enterDayView }) {
   const monday = useMemo(() => mondayOf(date), [date]);
-  const days   = useMemo(() => Array.from({ length: 7 }, (_, i) => {
-    const d = new Date(monday);
-    d.setDate(monday.getDate() + i);
-    return d;
+  const days = useMemo(() => Array.from({ length: 7 }, (_, i) => {
+    const d = new Date(monday); d.setDate(monday.getDate() + i); return d;
   }), [monday]);
 
+  const [showHabits, setShowHabits] = useState(true);
   const [tasks, setTasks] = useState([]);
-  useEffect(() => { loadTasks(); }, [monday]);
+  const [popoverTask, setPopoverTask] = useState(null);
+  const [popoverPos, setPopoverPos] = useState({ x: 0, y: 0 });
 
-  async function loadTasks() {
-    const startISO = toLocalISO(monday);
-    const endISO   = toLocalISO(new Date(monday.getTime() + 6 * 86400000));
-    const res = await fetch(`http://localhost:8000/tasks?start_date=${startISO}&end_date=${endISO}`);
-    setTasks(res.ok ? await res.json() : []);
-  }
-  const toggleStatus = async (task) => {
-    await fetch(`http://localhost:8000/tasks/${task.id}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ status: !task.status }),
-    });
-    setTasks((p) => p.map((t) => (t.id === task.id ? { ...t, status: !t.status } : t)));
-  };
-  const deleteTask = async (id) => {
-    await fetch(`http://localhost:8000/tasks/${id}`, { method: "DELETE" });
-    setTasks((p) => p.filter((t) => t.id !== id));
+  useEffect(() => { load(); }, [monday]);
+  const load = async () => {
+    const r = await fetch(`http://localhost:8000/tasks?start_date=${toLocalISO(monday)}&end_date=${toLocalISO(new Date(monday.getTime() + 6 * 864e5))}`);
+    setTasks(r.ok ? await r.json() : []);
   };
 
-  const tasksByDate = useMemo(() => {
-    const map = Object.fromEntries(days.map((d) => [toLocalISO(d), []]));
-    tasks.forEach((t) => {
-      const key = toLocalISO(new Date(t.time));
-      if (map[key]) map[key].push(t);
-    });
-    return map;
-  }, [tasks, days]);
+  const toggleStatus = async (t) => { await fetch(`http://localhost:8000/tasks/${t.id}`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ status: !t.status }) }); setTasks(p => p.map(x => x.id === t.id ? { ...x, status: !x.status } : x)); };
+  const del = async (t, series) => { await fetch(`http://localhost:8000/tasks/${t.id}${series ? "?series=true" : ""}`, { method: "DELETE" }); setTasks(p => series ? p.filter(x => !(x.title === t.title && x.task_type === t.task_type)) : p.filter(x => x.id !== t.id)); setPopoverTask(null); };
 
-  const hours       = useMemo(() => [...Array(24).keys()], []);
-  const fieldHeight = parseInt(getComputedStyle(document.documentElement).getPropertyValue("--field-height"));
+  const grouped = useMemo(() => { const m = Object.fromEntries(days.map(d => [toLocalISO(d), []])); tasks.forEach(t => { const k = toLocalISO(new Date(t.time)); if (m[k]) m[k].push(t); }); return m; }, [tasks, days]);
 
-  return (
-    <div className="week-grid">
-      {/* Nagłówki dni */}
-      {days.map((d, i) => (
-        <div key={i} className="week-day-header" style={{ gridColumn: i + 2, gridRow: 1 }} onClick={() => enterDayView(d)}>
-          {d.toLocaleDateString("pl-PL", { weekday: "short", day: "numeric", month: "short" })}
-        </div>
-      ))}
+  const hours = [...Array(24).keys()];
+  const field = parseInt(getComputedStyle(document.documentElement).getPropertyValue("--field-height"));
 
-      {/* Godziny */}
-      {hours.map((h) => (
-        <div key={h} className="hour-label" style={{ gridColumn: 1, gridRow: h + 2 }}>{h}:00</div>
-      ))}
-
-      {/* Komórki z zadaniami */}
-      {days.map((d, dayIdx) => {
-        const iso  = toLocalISO(d);
-        const list = tasksByDate[iso].filter((t) => showHabits || t.task_type !== "habit");
-        return hours.map((h) => (
-          <div key={`${iso}-${h}`} className="week-cell" style={{ gridColumn: dayIdx + 2, gridRow: h + 2 }}>
-            {list.filter((t) => new Date(t.time).getHours() === h).map((task) => {
-              const start  = new Date(task.time);
-              const top    = (start.getMinutes() / 60) * fieldHeight;
-              const height = Math.ceil(task.duration / 60) * fieldHeight;
-              return (
-                <div key={task.id} className={`task-block ${task.status ? "completed" : ""}`} style={{ backgroundColor: task.color, top: `${top}px`, height: `${height}px` }}>
-                  <label className="task-label">
-                    <input type="checkbox" checked={task.status} onChange={() => toggleStatus(task)} />
-                    <span className="task-title">{task.title}</span>
-                    <button type="button" className="delete-btn" onClick={() => deleteTask(task.id)}>
-                      🗑 <span>Usuń</span>
-                    </button>
-                    {task.description && <span className="task-desc">{task.description}</span>}
-                  </label>
-                </div>
-              );
-            })}
-          </div>
-        ));
-      })}
+  return (<>
+    <button className="habit-toggle-btn" onClick={() => setShowHabits(v => !v)}>{showHabits ? "Ukryj nawyki" : "Pokaż nawyki"}</button>
+    <div className="week-grid" onClick={() => setPopoverTask(null)}>
+      {days.map((d, i) => (<div key={i} className="week-day-header" style={{ gridColumn: i + 2, gridRow: 1 }} onClick={() => enterDayView(d)}>{d.toLocaleDateString("pl-PL", { weekday: "short", day: "numeric", month: "short" })}</div>))}
+      {hours.map(h => (<div key={h} className="hour-label" style={{ gridColumn: 1, gridRow: h + 2 }}>{h}:00</div>))}
+      {days.map((d, di) => hours.map(h => {
+        const iso = toLocalISO(d);
+        return (<div key={`${iso}-${h}`} className="week-cell" style={{ gridColumn: di + 2, gridRow: h + 2 }}>
+          {grouped[iso].filter(t => showHabits || t.task_type !== "habit").filter(t => new Date(t.time).getHours() === h).map(t => {
+            const s = new Date(t.time); const top = (s.getMinutes() / 60) * field; const ht = Math.ceil(t.duration / 60) * field;
+            return (<div key={t.id} className={`task-block${t.status ? " completed" : ""}${t.task_type === "habit" ? " habit-task" : ""}`} style={{ backgroundColor: t.color, top: `${top}px`, height: `${ht}px` }}
+              onClick={e => { e.stopPropagation(); setPopoverTask(t); setPopoverPos({ x: e.clientX, y: e.clientY }); }}>
+              <span className="task-title">{t.title}</span>
+              <input type="checkbox" checked={t.status} onChange={() => toggleStatus(t)} />
+            </div>);
+          })}
+        </div>);
+      }))}
     </div>
-  );
+    <TaskPopover task={popoverTask} position={popoverPos} onClose={() => setPopoverTask(null)} onDelete={(t) => del(t, false)} onDeleteSeries={(t) => del(t, true)} onEdit={(t) => alert("Edytuj " + t.title)} onEditSeries={(t) => alert("Edytuj serię " + t.title)} />
+  </>);
 }

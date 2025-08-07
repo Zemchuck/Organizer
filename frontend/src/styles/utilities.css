@@ -1,37 +1,27 @@
 @import './variables.css';
 
-/* ✅ Reset podstawowy */
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
+* { margin: 0; padding: 0; box-sizing: border-box; }
 
-/* ✅ Wspólne etykiety godzin */
 .hour-label {
-  font-size: 0.75rem;
+  font-size: .75rem;
   color: var(--gray);
   display: flex;
   align-items: flex-start;
 }
 
-/* ------------------------------------------------------------------ */
-/* 🔹 PRZYCISKI GLOBALNE                                             */
-/* ------------------------------------------------------------------ */
-
-/* Toggle nawyków (Month / Week / Day) */
+/* === Habit toggle === */
 .habit-toggle-btn {
   all: unset;
   display: inline-block;
-  padding: 0.6rem 1.2rem;
+  padding: .6rem 1.2rem;
   border: 2px solid var(--purple);
   border-radius: 8px;
   font-family: "Oxanium", sans-serif;
   font-weight: 600;
   color: var(--white);
   cursor: pointer;
-  transition: background 0.2s, box-shadow 0.2s, transform 0.1s;
-  margin: 0 0.5rem 0.6rem 0.6rem;
+  transition: background .2s, box-shadow .2s, transform .1s;
+  margin: 0 .5rem .6rem .6rem;
 }
 .habit-toggle-btn:hover {
   background: linear-gradient(90deg, var(--turquoise), var(--purple));
@@ -39,79 +29,141 @@
   box-shadow: 0 0 8px var(--turquoise);
 }
 
-/* Ikonka kosza przy zadaniu */
-.delete-btn {
-  all: unset;
-  cursor: pointer;
-  margin-left: 0.4rem;
-  font-size: 0.8rem;
-}
-.delete-btn:hover { opacity: 0.7; }
-
-/* ------------------------------------------------------------------ */
-/* 🔹 BLOKI ZADAŃ                                                    */
-/* ------------------------------------------------------------------ */
-.task-bar,
+/* === Bloki zadań === */
 .task-block {
-  padding: 4px 6px;
-  border-radius: 4px;
-  font-size: 0.8rem;
+  position: relative;
+  padding-bottom: 28px;
+}
+.task-block input[type="checkbox"] {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  transform: scale(1.2);
+}
+
+/* === Context menu === */
+.task-menu {
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  min-width: 130px;                   /* zapewnia minimalną szerokość */
+  background: var(--panel);
+  color: var(--white);
+  border: 1px solid var(--purple);
+  border-radius: 6px;
+  padding: 6px 8px;
   display: flex;
   flex-direction: column;
-  gap: 2px;
-  color: var(--graphite);
-  position: relative;
-  overflow: hidden;
+  gap: 6px;
+  z-index: 40;
+  font-size: .75rem;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, .6);
+  opacity: 1;                         /* zawsze widoczny, gdy renderowany z JSX */
+  pointer-events: auto;               /* klikalny */
 }
 
-.task-title { font-weight: 600; }
-.task-desc  { font-size: 0.7rem; font-style: italic; color: var(--gray); }
-
-/* Kolory domyślne */
-.task-bar.single,
-.task-bar.one_time { background: var(--turquoise); }
-.task-bar.habit    { background: var(--purple);   opacity: 0.5; }
-
-/* Ukończone */
-.completed,
-.task-block.completed { text-decoration: line-through; color: #888; opacity: 0.6; }
-
-/* Powiększony checkbox */
-.task-bar input[type="checkbox"],
-.task-block input[type="checkbox"] {
-  transform: scale(1.2);
-  margin-right: 4px;
+/* przy wykorzystaniu hover jako fallback */
+.task-block:hover .task-menu {
+  opacity: 1;
+  pointer-events: auto;
 }
 
-/* Priorytety – ikony */
-.P1::before { content: "‼ "; color: #ff4c4c; font-weight: bold; }
-.P2::before { content: "⭐ "; color: #ffa500; }
-.P3::before { content: "⌛ "; color: #40e0d0; }
-.P4::before { content: "✕ "; color: #9ca3af; }
-
-/* Pasek priorytetu */
-.priority-high   { border-left: 4px solid #ff4c4c; }
-.priority-medium { border-left: 4px solid #ffa500; }
-.priority-low    { border-left: 4px solid #40e0d0; }
-.priority-none   { border-left: 4px solid #9ca3af; }
-
-.delete-btn {
+.task-menu button {
   all: unset;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.25rem;
   cursor: pointer;
-  margin-left: 0.5rem;
-  font-size: 0.8rem;
-  padding: 2px 6px;
+  padding: 3px 6px;
   border: 1px solid var(--purple);
   border-radius: 4px;
-  color: var(--white);
-  background: rgba(155, 93, 229, 0.25); /* pół‑transparentny fiolet */
-  transition: background 0.2s, transform 0.1s;
+  display: block;
+  text-align: center;
+  background: rgba(0,0,0,0.3);
+  transition: background .2s;
 }
-.delete-btn:hover {
+.task-menu button:hover {
   background: linear-gradient(90deg, var(--turquoise), var(--purple));
   color: var(--graphite);
 }
-.delete-btn:active { transform: scale(0.95); }
+
+/* opis w menu */
+.task-menu .desc {
+  font-style: italic;
+  color: var(--gray);
+  padding-top: 4px;
+  border-top: 1px solid rgba(255,255,255,.08);
+  line-height: 1.3;
+}
+
+/* === Habit blok === */
+.habit-task {
+  opacity: .7;
+  background-image: repeating-linear-gradient(
+    135deg,
+    rgba(255,255,255,.15) 0,
+    rgba(255,255,255,.15) 6px,
+    transparent 6px,
+    transparent 12px
+  );
+}
+
+/* === Google Calendar style Popover === */
+.task-popover {
+  position: fixed;
+  background: var(--panel);
+  color: var(--white);
+  border-radius: 8px;
+  border: 1px solid var(--purple);
+  padding: 12px 14px 10px;
+  min-width: 260px;
+  max-width: 320px;
+  z-index: 200;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+  animation: fadeIn .15s ease;
+}
+.popover-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+.popover-header h4 {
+  margin: 0;
+  font-family: "Oxanium", sans-serif;
+  font-size: 1rem;
+}
+.task-popover .desc {
+  font-size: .8rem;
+  color: var(--gray);
+  margin: 4px 0 10px;
+}
+.task-popover .actions.single-line {
+  display: flex;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 6px;
+}
+.task-popover button {
+  all: unset;
+  padding: 4px 10px;
+  border: 1px solid var(--purple);
+  border-radius: 4px;
+  background: rgba(0,0,0,0.5);
+  cursor: pointer;
+  font-size: .75rem;
+}
+.task-popover button:hover {
+  background: linear-gradient(90deg,var(--turquoise),var(--purple));
+  color: var(--graphite);
+}
+.close-btn {
+  font-size: 1.2rem;
+  line-height: 1;
+  cursor: pointer;
+  color: var(--white);
+  border: none;
+  background: transparent;
+}
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
