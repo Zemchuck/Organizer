@@ -1,0 +1,45 @@
+@import '../styles/variables.css';
+
+.popover-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.45);
+  display: grid;
+  place-items: center;
+  z-index: 50;
+}
+
+.popover-card {
+  width: min(720px, 92vw);
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  box-shadow: var(--shadow);
+  padding: .75rem;
+}
+
+.popover-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: .25rem .25rem .5rem;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: .6rem;
+}
+.popover-head strong {
+  color: var(--turquoise);
+  font-family: "Oxanium", sans-serif;
+}
+
+.close-btn {
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--white);
+  border-radius: 8px;
+  height: 32px;
+  padding: 0 .6rem;
+  cursor: pointer;
+  transition: background .15s, border-color .15s, transform .05s;
+}
+.close-btn:hover { background: rgba(255,255,255,.06); border-color: var(--border-strong); }
+.close-btn:active { transform: scale(.95); }

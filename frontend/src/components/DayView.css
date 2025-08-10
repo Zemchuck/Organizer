@@ -1,73 +1,192 @@
 @import '../styles/variables.css';
-@import '../styles/utilities.css';
 
+/* ===== USTAWIENIA SIATKI ===== */
+.day-view {
+  --hour-h: 30px;
+  /* wysokość 1 godziny */
+  background: var(--bg);
+}
+
+/* nagłówek dnia */
+.day-head {
+  text-align: center;
+  color: var(--white);
+  font-weight: 800;
+  letter-spacing: .2px;
+  padding-bottom: .35rem;
+  font-family: "Oxanium", Inter, system-ui, sans-serif;
+}
+
+/* ===== SIATKA: skala godzin + kolumna dnia ===== */
 .day-grid {
   display: grid;
-  grid-template-columns: 60px 1fr;
-  grid-template-rows: calc(var(--field-height) * 1.5) repeat(24, var(--field-height));
-  height: calc(100vh - var(--header-height, 128px));
-  overflow-y: auto;
+  grid-template-columns: var(--gutter-w, 58px) 1fr;
+  border: 1px solid var(--border);
+  border-top: none;
+  box-sizing: border-box;
+}
+
+/* lewa kolumna z godzinami (tło kresek = to samo co w kolumnie dnia) */
+.hours-col {
+  border-right: 1px solid var(--border);
+  box-sizing: border-box;
+  background:
+    repeating-linear-gradient(to bottom,
+      transparent,
+      transparent calc(var(--hour-h) - 1px),
+      var(--border) calc(var(--hour-h) - 1px),
+      var(--border) var(--hour-h));
+}
+
+.hour-cell {
+  height: var(--hour-h);
+  line-height: var(--hour-h);
+  padding-right: .35rem;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  color: rgba(255, 255, 255, .85);
+}
+
+/* kolumna dnia z liniami godzin */
+.day-col {
   position: relative;
-}
-
-.corner {
-  grid-column: 1;
-  grid-row: 1;
-  background: var(--panel);
-  border-bottom: 1px solid rgba(255,255,255,0.1);
-  border-right: 1px solid rgba(255,255,255,0.06);
-}
-
-.day-header {
-  grid-column: 2;
-  grid-row: 1;
-  background: var(--panel);
-  border-bottom: 1px solid rgba(255,255,255,0.1);
-  text-align: center;
-  font-weight: 600;
-  color: var(--turquoise);
-  padding: 4px;
-}
-
-.day-cell {
-  position: relative;
-  grid-column: 2;
-  border-bottom: 1px solid rgba(255,255,255,0.06);
-  border-left: 1px solid rgba(255,255,255,0.06);
-  background: var(--panel);
-}
-
-.task-block {
-  position: absolute;
-  left: 4px;
-  right: 4px;
-  border-radius: 4px;
-  padding: 4px 6px;
-  font-size: 0.8rem;
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
+  min-height: calc(var(--hour-h) * 24);
+  border-right: 1px solid var(--border);
+  box-sizing: border-box;
+  background:
+    repeating-linear-gradient(to bottom,
+      transparent,
+      transparent calc(var(--hour-h) - 1px),
+      var(--border) calc(var(--hour-h) - 1px),
+      var(--border) var(--hour-h));
   overflow: hidden;
-  color: var(--graphite);
-}
-.task-block.completed { opacity: 0.6; text-decoration: line-through; }
-
-.task-label { display: flex; flex-direction: column; gap: 2px; width: 100%; }
-.task-title { font-weight: 600; }
-.task-desc  { font-size: 0.7rem; font-style: italic; color: var(--gray); }
-
-.task-block input[type="checkbox"] {
-  transform: scale(1.2);
-  margin-right: 4px;
 }
 
-.no-tasks-overlay {
+.day-col:last-child {
+  border-right: none;
+}
+
+.hour-row {
+  height: var(--hour-h);
+}
+
+/* techniczne wiersze do nakładania bloków */
+
+/* ===== BLOKI WYDARZEŃ ===== */
+.event-block {
   position: absolute;
+  border-radius: 10px;
+  color: var(--white);
+  padding: .35rem .6rem;
+  display: inline-flex;
+  align-items: center;
+  gap: .5rem;
+
+  /* ✅ gradient zawsze, kolor spod spodu przez zmienną */
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, .12) 0%, rgba(0, 0, 0, .06) 100%),
+    var(--ev-color, #c84a5b);
+
+  box-shadow:
+    0 4px 10px rgba(0, 0, 0, .35),
+    inset 0 0 0 1px rgba(0, 0, 0, .15);
+
+  overflow: hidden;
+  z-index: 2;
+  isolation: isolate;
+  /* pseudo-elementy mieszają się tylko w obrębie kafelka */
+}
+
+.event-block .ev-time {
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  text-shadow: 0 1px 0 rgba(0, 0, 0, .25);
+}
+
+.event-block .ev-title {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ===== NAWYK: przekątne zawsze widoczne (jasne + ciemne) ===== */
+/* działa i po klasie, i po atrybucie data-kind="habit" */
+.event-block.habit {
+  background:
+    /* skosy jasne (na ciemnych kolorach) */
+    repeating-linear-gradient(45deg, rgba(255, 255, 255, .28) 0 2px, transparent 2px 8px),
+    repeating-linear-gradient(-45deg, rgba(255, 255, 255, .28) 0 2px, transparent 2px 8px),
+    /* skosy ciemne (na bardzo jasnych kolorach) */
+    repeating-linear-gradient(45deg, rgba(0, 0, 0, .22) 0 1px, transparent 1px 8px),
+    repeating-linear-gradient(-45deg, rgba(0, 0, 0, .22) 0 1px, transparent 1px 8px),
+    /* nasz „połysk” + kolor z pickera pod spodem */
+    linear-gradient(180deg, rgba(255, 255, 255, .12) 0%, rgba(0, 0, 0, .06) 100%),
+    var(--ev-color, #c84a5b) !important;
+  /* !important żeby wygrać z ogólnym .event-block */
+}
+/* ===== POPOVER (spójny z WeekView) ===== */
+.event-popover {
+  width: 280px;
+  max-width: 92vw;
+  background: var(--panel);
+  color: var(--white);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, .45);
+  padding: .6rem .7rem;
+  z-index: 9999;
+}
+
+.event-popover.right::before {
+  content: "";
+  position: absolute;
+  left: -8px;
   top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  color: var(--gray);
-  font-size: 1rem;
-  opacity: 0.7;
-  pointer-events: none;
+  transform: translateY(-50%);
+  border-width: 8px;
+  border-style: solid;
+  border-color: transparent var(--panel) transparent transparent;
+  filter: drop-shadow(-1px 0 0 var(--border));
+}
+
+.event-popover .ep-title {
+  font-weight: 800;
+  margin-bottom: .25rem;
+}
+
+.event-popover .ep-desc {
+  opacity: .9;
+  font-size: .9rem;
+  line-height: 1.35;
+  margin-bottom: .5rem;
+}
+
+.ep-actions {
+  display: flex;
+  gap: .4rem;
+  flex-wrap: wrap;
+}
+
+.pop-btn {
+  border: 1px solid rgba(255, 255, 255, .22);
+  background: transparent;
+  color: var(--white);
+  border-radius: 8px;
+  padding: .35rem .6rem;
+  cursor: pointer;
+  transition: background .15s, border-color .15s, transform .05s;
+}
+
+.pop-btn:hover {
+  background: rgba(255, 255, 255, .08);
+  border-color: rgba(255, 255, 255, .32);
+}
+
+.pop-btn.danger {
+  border-color: rgba(255, 99, 71, .45);
+  color: #ffb3ad;
+}
+
+.pop-btn.danger:hover {
+  background: rgba(255, 99, 71, .12);
 }

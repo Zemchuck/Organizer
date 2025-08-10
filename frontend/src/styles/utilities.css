@@ -1,15 +1,30 @@
 @import './variables.css';
 
-* { margin: 0; padding: 0; box-sizing: border-box; }
-
-.hour-label {
-  font-size: .75rem;
-  color: var(--gray);
-  display: flex;
-  align-items: flex-start;
+/* ==========================================================================
+   Reset bazowy
+   ========================================================================== */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
 }
 
-/* === Habit toggle === */
+/* ==========================================================================
+   Typografia drobna / etykiety czasu
+   ========================================================================== */
+.hour-label {
+  display: flex;
+  align-items: flex-start;
+  font-size: .75rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--gray);
+  opacity: .85;
+  letter-spacing: .1px;
+}
+
+/* ==========================================================================
+   Przycisk: Habit toggle
+   ========================================================================== */
 .habit-toggle-btn {
   all: unset;
   display: inline-block;
@@ -20,20 +35,36 @@
   font-weight: 600;
   color: var(--white);
   cursor: pointer;
-  transition: background .2s, box-shadow .2s, transform .1s;
+  transition: background .2s, box-shadow .2s, transform .1s, border-color .2s;
   margin: 0 .5rem .6rem .6rem;
 }
+
 .habit-toggle-btn:hover {
   background: linear-gradient(90deg, var(--turquoise), var(--purple));
   color: var(--graphite);
   box-shadow: 0 0 8px var(--turquoise);
 }
 
-/* === Bloki zadań === */
+.habit-toggle-btn:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+
+.habit-toggle-btn:disabled {
+  opacity: .6;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+/* ==========================================================================
+   Bloki zadań – kontener z opcjonalnym checkboxem
+   ========================================================================== */
 .task-block {
   position: relative;
   padding-bottom: 28px;
+  /* miejsce na akcje/checkbox */
 }
+
 .task-block input[type="checkbox"] {
   position: absolute;
   top: 4px;
@@ -41,12 +72,16 @@
   transform: scale(1.2);
 }
 
-/* === Context menu === */
+/* ==========================================================================
+   Context menu (prosty)
+   Uwaga: celowo pozostaje widoczne, gdy jest wyrenderowane w JSX.
+   Dodatkowo działa fallback przez :hover na .task-block.
+   ========================================================================== */
 .task-menu {
   position: absolute;
   top: 4px;
   left: 4px;
-  min-width: 130px;                   /* zapewnia minimalną szerokość */
+  min-width: 130px;
   background: var(--panel);
   color: var(--white);
   border: 1px solid var(--purple);
@@ -58,11 +93,11 @@
   z-index: 40;
   font-size: .75rem;
   box-shadow: 0 2px 6px rgba(0, 0, 0, .6);
-  opacity: 1;                         /* zawsze widoczny, gdy renderowany z JSX */
-  pointer-events: auto;               /* klikalny */
+  opacity: 1;
+  pointer-events: auto;
 }
 
-/* przy wykorzystaniu hover jako fallback */
+/* Fallback – pokaż menu przy hoverze na kontenerze */
 .task-block:hover .task-menu {
   opacity: 1;
   pointer-events: auto;
@@ -74,67 +109,82 @@
   padding: 3px 6px;
   border: 1px solid var(--purple);
   border-radius: 4px;
-  display: block;
   text-align: center;
-  background: rgba(0,0,0,0.3);
-  transition: background .2s;
+  background: rgba(0, 0, 0, 0.3);
+  transition: background .2s, border-color .2s, color .2s;
 }
+
 .task-menu button:hover {
   background: linear-gradient(90deg, var(--turquoise), var(--purple));
   color: var(--graphite);
+  border-color: transparent;
 }
 
-/* opis w menu */
+.task-menu button:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+
 .task-menu .desc {
   font-style: italic;
   color: var(--gray);
   padding-top: 4px;
-  border-top: 1px solid rgba(255,255,255,.08);
+  border-top: 1px solid rgba(255, 255, 255, .08);
   line-height: 1.3;
 }
 
-/* === Habit blok === */
+/* ==========================================================================
+   Habit „przekątny” wzorek – do prostych kafelków
+   (Uwaga: w nowych widokach habit ma przekątne przez ::before w CSS komponentu)
+   ========================================================================== */
 .habit-task {
   opacity: .7;
-  background-image: repeating-linear-gradient(
-    135deg,
-    rgba(255,255,255,.15) 0,
-    rgba(255,255,255,.15) 6px,
-    transparent 6px,
-    transparent 12px
-  );
+  background-image:
+    repeating-linear-gradient(135deg,
+      rgba(255, 255, 255, .15) 0,
+      rgba(255, 255, 255, .15) 6px,
+      transparent 6px,
+      transparent 12px);
 }
 
-/* === Google Calendar style Popover === */
+/* ==========================================================================
+   Popover w stylu Google Calendar (używany przez TaskPopover)
+   ========================================================================== */
 .task-popover {
   position: fixed;
   background: var(--panel);
   color: var(--white);
-  border-radius: 8px;
   border: 1px solid var(--purple);
+  border-radius: 8px;
   padding: 12px 14px 10px;
   min-width: 260px;
   max-width: 320px;
   z-index: 200;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
   animation: fadeIn .15s ease;
 }
+
 .popover-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-bottom: 6px;
+  gap: .5rem;
 }
+
 .popover-header h4 {
   margin: 0;
   font-family: "Oxanium", sans-serif;
   font-size: 1rem;
 }
+
 .task-popover .desc {
   font-size: .8rem;
   color: var(--gray);
   margin: 4px 0 10px;
+  line-height: 1.35;
 }
+
 .task-popover .actions.single-line {
   display: flex;
   justify-content: flex-end;
@@ -142,19 +192,29 @@
   gap: 6px;
   margin-top: 6px;
 }
+
 .task-popover button {
   all: unset;
   padding: 4px 10px;
   border: 1px solid var(--purple);
   border-radius: 4px;
-  background: rgba(0,0,0,0.5);
+  background: rgba(0, 0, 0, 0.5);
   cursor: pointer;
   font-size: .75rem;
+  transition: background .2s, border-color .2s, color .2s;
 }
+
 .task-popover button:hover {
-  background: linear-gradient(90deg,var(--turquoise),var(--purple));
+  background: linear-gradient(90deg, var(--turquoise), var(--purple));
   color: var(--graphite);
+  border-color: transparent;
 }
+
+.task-popover button:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+
 .close-btn {
   font-size: 1.2rem;
   line-height: 1;
@@ -163,7 +223,31 @@
   border: none;
   background: transparent;
 }
+
+/* Animacje */
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(-4px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Preferencje dostępności: mniej ruchu */
+@media (prefers-reduced-motion: reduce) {
+  .task-popover {
+    animation: none;
+  }
+
+  .habit-toggle-btn {
+    transition: none;
+  }
+
+  .task-menu button {
+    transition: none;
+  }
 }

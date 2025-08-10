@@ -1,85 +1,225 @@
-@import '../styles/variables.css';
-@import '../styles/utilities.css';
+/* ---------- Ustawienia ---------- */
+.week-view {
+  --hour-h: 30px;
+  /* wysokość 1h */
+  --grid-major: rgba(255, 255, 255, .22);
+  /* linie pełnej godziny */
+  --grid-major-w: 2px;
+  --grid-minor: rgba(255, 255, 255, .09);
+  /* półgodziny */
+  --grid-minor-w: 1px;
+  --grid-vert: rgba(255, 255, 255, .12);
+  /* pionowe separatory dni */
+  --hour-label-nudge: 6px;
+  /* dosunięcie etykiety do kreski */
+  --now: #e53935;
+}
 
-.week-grid {
+/* ---------- Head ---------- */
+.week-head {
   display: grid;
-  grid-template-columns: 60px repeat(7, 1fr); /* godziny + 7 dni */
-  grid-template-rows: calc(var(--field-height) * 1.5) repeat(24, var(--field-height));
-  height: calc(100vh - var(--header-height, 128px));
-  overflow-y: auto;
+  grid-template-columns: var(--gutter-w, 58px) repeat(7, 1fr);
+  background: var(--panel);
+  border: 2px solid var(--border);
+}
+
+.head-cell {
+  display: grid;
+  place-items: center;
+  gap: .15rem;
+  padding: .45rem 0;
+  border-right: 1px solid var(--border);
+}
+
+.head-cell:last-child {
+  border-right: none;
+}
+
+.head-cell.gutter {
+  visibility: hidden;
+  border-right: none;
+}
+
+.head-cell .wd {
+  font-family: "Oxanium", sans-serif;
+  font-weight: 800;
+  color: var(--white);
+  text-transform: capitalize;
+}
+
+.head-cell .dm {
+  font-weight: 700;
+  color: var(--turquoise);
+}
+
+.head-cell.today {
+  background: linear-gradient(135deg, rgba(111, 234, 209, 0.897), rgba(5, 193, 155, 0.842));
+  box-shadow: inset 0 -1px 0 var(--border);
+}
+
+/* ---------- Grid ---------- */
+.week-grid {
   position: relative;
-  background: var(--panel);
+  display: grid;
+  grid-template-columns: var(--gutter-w, 58px) repeat(7, 1fr);
+  border: 1px solid var(--border);
+  border-top: none;
 }
 
-/* Nagłówki dni */
-.week-day-header {
-  border-bottom: 1px solid rgba(255,255,255,0.1);
-  border-left: 1px solid rgba(255,255,255,0.06);
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  background: var(--panel);
-  font-size: 0.85rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background 0.2s;
-}
-.week-day-header:hover { background: rgba(64,224,208,0.08); }
-.week-day-header.today { box-shadow: inset 0 -3px var(--turquoise); }
-
-/* Godziny */
-.hour-label {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  padding-right: 0.5rem;
-  font-size: 0.75rem;
-  color: var(--gray);
-  background: var(--panel);
+/* lewa kolumna z godzinami: linie i label przy samej krawędzi */
+.hours-col {
+  border-right: 2px solid var(--border);
+  background:
+    /* pełne godziny */
+    repeating-linear-gradient(to bottom,
+      transparent,
+      transparent calc(var(--hour-h) - var(--grid-major-w)),
+      var(--grid-major) calc(var(--hour-h) - var(--grid-major-w)),
+      var(--grid-major) var(--hour-h)),
+    /* półgodziny */
+    repeating-linear-gradient(to bottom,
+      transparent,
+      transparent calc(calc(var(--hour-h)/2) - var(--grid-minor-w)),
+      var(--grid-minor) calc(calc(var(--hour-h)/2) - var(--grid-minor-w)),
+      var(--grid-minor) calc(var(--hour-h)/2));
 }
 
-/* Komórki 24h */
-.week-cell {
+.hours-col {
+  border-right: 1px solid var(--border);
+  background:
+    /* pełne godziny */
+    repeating-linear-gradient(to bottom,
+      transparent,
+      transparent calc(var(--hour-h) - var(--grid-major-w)),
+      var(--grid-major) calc(var(--hour-h) - var(--grid-major-w)),
+      var(--grid-major) var(--hour-h));
+}
+
+/* kolumny dni: te same linie + wyraźniejsze pionowe separatory */
+.day-col {
   position: relative;
-  border-left: 1px solid rgba(255,255,255,0.06);
-  border-bottom: 1px solid rgba(255,255,255,0.06);
-  background: var(--panel);
-}
-
-/* Zadania */
-.task-block {
-  position: absolute;
-  left: 4px;
-  right: 4px;
-  border-radius: 4px;
-  padding: 4px 6px;
-  font-size: 0.8rem;
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  color: var(--graphite);
-  box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+  min-height: calc(var(--hour-h) * 24);
+  border-right: 1px solid var(--grid-vert);
+  background:
+    /* pełne godziny */
+    repeating-linear-gradient(to bottom,
+      transparent,
+      transparent calc(var(--hour-h) - var(--grid-major-w)),
+      var(--grid-major) calc(var(--hour-h) - var(--grid-major-w)),
+      var(--grid-major) var(--hour-h));
   overflow: hidden;
-  z-index: 2;
 }
 
-/* Brak zadań */
-.no-tasks-overlay {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  color: var(--gray);
-  font-size: 1rem;
+.day-col:last-child {
+  border-right: none;
 }
 
-/* Linie każdej godziny */
-.week-hour-line {
+.hour-row {
+  height: var(--hour-h);
+}
+
+/* wiersz techniczny */
+
+/* linia „teraz” przez całą siatkę + kropka w bieżącym dniu */
+.now-line {
   position: absolute;
-  left: 0;
+  left: var(--gutter-w, 58px);
   right: 0;
-  height: 1px;
-  background: rgba(255,255,255,0.06);
-  z-index: 0;
+  height: 2px;
+  background: var(--now);
+  box-shadow: 0 0 0 1px var(--now);
+  transform: translateY(-1px);
+  z-index: 3;
+  pointer-events: none;
+}
+
+.now-pin {
+  position: absolute;
+  right: -5px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--now);
+  box-shadow: 0 0 0 2px rgba(229, 57, 53, .35);
+  transform: translateY(-50%);
+  z-index: 4;
+  pointer-events: none;
+}
+
+/* ---------- Event block ---------- */
+.event-block {
+  position: absolute;
+  border-radius: 8px;
+  color: var(--white);
+  padding: .15rem .35rem;
+  display: inline-flex;
+  align-items: center;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, .12) 0%, rgba(0, 0, 0, .06) 100%),
+    var(--ev-color, #7aa7ff);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, .35), inset 0 0 0 1px rgba(0, 0, 0, .15);
+  overflow: hidden;
+}
+
+.event-block .ev-time {
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  text-shadow: 0 1px 0 rgba(0, 0, 0, .25);
+}
+
+/* skalowanie czasu wewnątrz kafelka (zależnie od wysokości) */
+.event-block.tiny .ev-time {
+  font-size: 10px;
+}
+
+.event-block.small .ev-time {
+  font-size: 11px;
+}
+
+.event-block.normal .ev-time {
+  font-size: 12px;
+}
+
+.event-block.large .ev-time {
+  font-size: 13px;
+}
+
+/* nawyk – przekątne zawsze widoczne */
+.event-block.habit::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  border-radius: inherit;
+  --stripe: 8px;
+  background:
+    repeating-linear-gradient(45deg, rgba(255, 255, 255, .28) 0 2px, transparent 2px var(--stripe)),
+    repeating-linear-gradient(-45deg, rgba(255, 255, 255, .28) 0 2px, transparent 2px var(--stripe)),
+    repeating-linear-gradient(45deg, rgba(0, 0, 0, .22) 0 1px, transparent 1px var(--stripe)),
+    repeating-linear-gradient(-45deg, rgba(0, 0, 0, .22) 0 1px, transparent 1px var(--stripe));
+}
+
+/* Popover (bez zmian stylistycznie) */
+.event-popover {
+  width: 280px;
+  max-width: 92vw;
+  background: var(--panel);
+  color: var(--white);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, .45);
+  padding: .6rem .7rem;
+  z-index: 9999;
+}
+
+.event-popover.right::before {
+  content: "";
+  position: absolute;
+  left: -8px;
+  top: 50%;
+  transform: translateY(-50%);
+  border-width: 8px;
+  border-style: solid;
+  border-color: transparent var(--panel) transparent transparent;
+  filter: drop-shadow(-1px 0 0 var(--border));
 }

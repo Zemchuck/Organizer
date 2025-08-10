@@ -1,0 +1,30 @@
+/* Reużyj dokładnie ten sam layout i wygląd co formularz zadań */
+@import './SingleTaskForm.css';
+
+/* ✅ Poprawne wyświetlanie koloru w pickerze (WebKit/Firefox) */
+.single-task-form input[type="color"] {
+  padding: 0;             /* usuń padding, żeby nie „zabielać” próbnika */
+  height: 38px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+.single-task-form input[type="color"]::-webkit-color-swatch-wrapper { padding: 0; border-radius: 8px; }
+.single-task-form input[type="color"]::-webkit-color-swatch         { border: 1px solid var(--border); border-radius: 8px; }
+.single-task-form input[type="color"]::-moz-color-swatch             { border: 1px solid var(--border); border-radius: 8px; }
+
+/* Podgląd koloru obok kontrolki (na wypadek dziwactw przeglądarki) */
+.color-inline {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+}
+.color-preview {
+  width: 30px;
+  height: 30px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  box-shadow: inset 0 0 0 1px rgba(0,0,0,.15);
+}
+
+/* Drobne: gwiazdka przy wymaganych */
+.req { color: var(--turquoise); font-weight: 700; }

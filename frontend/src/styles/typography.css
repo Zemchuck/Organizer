@@ -1,0 +1,117 @@
+@import './variables.css';
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Oxanium:wght@600;700;800&display=swap');
+
+
+/* ---------- Font stacks & scale ---------- */
+:root {
+  --font-sans: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", "Liberation Sans", sans-serif;
+  --font-head: "Oxanium", var(--font-sans);
+
+  /* Modular-ish scale (bazuje na ~16px) */
+  --fs-2xs: 0.70rem;
+  --fs-xs:  0.78rem;
+  --fs-sm:  0.88rem;
+  --fs-md:  1.00rem; /* body */
+  --fs-lg:  1.12rem;
+  --fs-xl:  1.28rem;
+  --fs-2xl: 1.6rem;  /* sekcyjne */
+  --fs-3xl: 2.0rem;  /* duże tytuły */
+
+  --lh-tight: 1.15;
+  --lh-base:  1.45;
+  --lh-loose: 1.65;
+
+  --track-tight: -0.01em;
+  --track-base:  0.0em;
+  --track-wide:  0.015em;
+}
+
+/* ---------- Global base ---------- */
+html, body {
+  font-family: var(--font-sans);
+  font-size: 16px;
+  line-height: var(--lh-base);
+  letter-spacing: var(--track-base);
+  color: var(--white);
+}
+
+/* Wygładzenie + równe cyfry */
+body {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-feature-settings: "tnum" 1, "liga" 1, "calt" 1; /* tabular numbers */
+}
+
+/* ---------- Headings / sekcje ---------- */
+.h1, h1 { font-family: var(--font-head); font-weight: 800; font-size: var(--fs-3xl); line-height: var(--lh-tight); letter-spacing: var(--track-tight); color: var(--white); }
+.h2, h2 { font-family: var(--font-head); font-weight: 800; font-size: var(--fs-2xl); line-height: var(--lh-tight); letter-spacing: var(--track-tight); color: var(--white); }
+.h3, h3 { font-family: var(--font-head); font-weight: 700; font-size: var(--fs-xl);  line-height: var(--lh-tight); letter-spacing: var(--track-tight); color: var(--white); }
+
+/* Subtle labels / nadpisy */
+.overline {
+  font-size: var(--fs-2xs);
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  opacity: .85;
+}
+.muted { color: var(--text-muted); }
+
+/* ---------- Formularze ---------- */
+label {
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  letter-spacing: .01em;
+}
+input, select, textarea {
+  font-size: var(--fs-md);
+}
+
+/* ---------- Kalendarz: drobne akcenty typograficzne ---------- */
+/* toolbar tytuł */
+.cal-toolbar h3 {
+  font-family: var(--font-head);
+  font-size: var(--fs-xl);
+  font-weight: 800;
+  letter-spacing: var(--track-tight);
+}
+
+/* Day/Week head */
+.day-head,
+.week-head .day-head {
+  font-family: var(--font-head);
+  letter-spacing: var(--track-tight);
+}
+
+/* podpisy godzin */
+.hour-label {
+  font-size: var(--fs-sm);
+  font-variant-numeric: tabular-nums;
+  opacity: .92;
+}
+
+/* event title */
+.event-title {
+  font-size: var(--fs-sm);
+  letter-spacing: var(--track-base);
+}
+
+/* Month head cells */
+.month-grid-head .head-cell {
+  font-family: var(--font-head);
+  font-size: var(--fs-sm);
+  font-weight: 800;
+}
+
+/* Month day number */
+.day-top .num {
+  font-weight: 800;
+  letter-spacing: var(--track-tight);
+}
+
+/* Formularze w popoverach */
+.task-form h3,
+.popover-head strong {
+  font-family: var(--font-head);
+  font-weight: 800;
+  letter-spacing: var(--track-tight);
+}

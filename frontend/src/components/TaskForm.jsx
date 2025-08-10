@@ -1,228 +1,235 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useEffect, useState } from "react";
 import "./TaskForm.css";
 
-const TASK_TYPES = [
-  { value: "single", label: "Jednorazowe" },
-  { value: "habit", label: "Nawyk" },
-];
+const API = import.meta.env.VITE_API_URL || "";
+const DOW = ["Pn", "Wt", "Śr", "Cz", "Pt", "So", "Nd"];
+const today = () => new Date().toISOString().slice(0, 10);
 
-const TASK_COLORS = [
-  "#40E0D0", "#BB86FC", "#FF6B6B", "#FFA500",
-  "#00BFFF", "#32CD32", "#FFD700", "#FF1493",
-  "#7FFF00", "#FF4500", "#8A2BE2", "#708090"
-];
-
-const PRIORITY_COLORS = [
-  { value: 1, label: "Pilne i Ważne", color: "#ff4c4c" },
-  { value: 2, label: "Ważne, ale Niepilne", color: "#ffa500" },
-  { value: 3, label: "Pilne, ale Nieważne", color: "#40e0d0" },
-  { value: 4, label: "Niepilne i Nieważne", color: "#9ca3af" },
-];
-
-function TaskTypeDropdown({ value, onChange }) {
-  const [open, setOpen] = useState(false);
-  const selected = TASK_TYPES.find((t) => t.value === value) || TASK_TYPES[0];
-  const ref = useRef();
-
-  useEffect(() => {
-    const onClick = (e) => ref.current && !ref.current.contains(e.target) && setOpen(false);
-    document.addEventListener("mousedown", onClick);
-    return () => document.removeEventListener("mousedown", onClick);
-  }, []);
-
-  return (
-    <div className="custom-select" ref={ref}>
-      <button
-        type="button"
-        className="custom-select-button"
-        aria-haspopup="listbox"
-        aria-expanded={open}
-        onClick={() => setOpen((o) => !o)}
-      >
-        {selected.label}
-        <span className="arrow">▾</span>
-      </button>
-      {open && (
-        <ul className="custom-select-list" role="listbox">
-          {TASK_TYPES.map((t) => (
-            <li
-              key={t.value}
-              role="option"
-              aria-selected={t.value === value}
-              className={t.value === value ? "active" : ""}
-              onClick={() => { onChange(t.value); setOpen(false); }}
-            >
-              {t.label}
-            </li>
-          ))}
-        </ul>
-      )}
-    </div>
-  );
+async function postJSON(url, payload) {
+  const res = await fetch(url, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  const ct = res.headers.get("content-type") || "";
+  const text = await res.text();
+  let data = null;
+  try { data = ct.includes("application/json") ? JSON.parse(text) : text; } catch {}
+  if (!res.ok) {
+    // wyrzuć treść błędu 422 (z FastAPI zwykle w polu "detail")
+    const detail = data && data.detail ? JSON.stringify(data.detail) : text;
+    throw new Error(`HTTP ${res.status}: ${detail}`);
+  }
+  return data;
 }
 
-export default function TaskForm({ defaultDate, defaultTime = "", onAdded, onClose }) {
-  const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
-  // ✅ zamiast toISOString → toLocaleDateString("en-CA") (format YYYY-MM-DD bez przesunięć)
-  const [date, setDate] = useState(defaultDate ? defaultDate.toLocaleDateString("en-CA") : "");
-  const [time, setTime] = useState(defaultTime);
-  const [duration, setDuration] = useState(60);
-  const [type, setType] = useState("single");
-  const [color, setColor] = useState(TASK_COLORS[0]);
-  const [priority, setPriority] = useState(2);
-  const [repeatOn, setRepeatOn] = useState(false);
-  const [repeatDays, setRepeatDays] = useState([]);
-  const [repeatUntil, setRepeatUntil] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
-  const [showColors, setShowColors] = useState(false);
-  const [showPriority, setShowPriority] = useState(false);
+export default function TaskForm({ initialDate, onCreated, onCancel }) {
+  const [projects, setProjects] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [errFetch, setErrFetch] = useState("");
 
-  const week = ["Pn", "Wt", "Śr", "Cz", "Pt", "Sb", "Nd"];
+  const [state, setState] = useState({
+    project_id: "",                            // opcjonalnie
+    title: "",
+    date: initialDate || today(),              // ⬅️ domyślnie dziś
+    time: "09:00",
+    duration: 60,
+    color: "#59c1ff",
+    repeat_until: "",
+    repeat_days: [],
+  });
+
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const r = await fetch(`${API}/projects`);
+        const data = await r.json();
+        setProjects(Array.isArray(data) ? data : []);
+      } catch (e) {
+        console.error(e);
+        setErrFetch("Nie udało się pobrać listy projektów.");
+      } finally {
+        setLoading(false);
+      }
+    })();
+  }, []);
+
   const toggleDay = (i) => {
-    setRepeatDays((prev) => prev.includes(i) ? prev.filter(d => d !== i) : [...prev, i]);
+    setState((s) => {
+      const set = new Set(s.repeat_days);
+      set.has(i) ? set.delete(i) : set.add(i);
+      return { ...s, repeat_days: [...set].sort((a, b) => a - b) };
+    });
   };
 
-  const handleSubmit = async (e) => {
+  function buildPayload() {
+    // wymagane wg bazy: title, date, time, duration
+    const title = state.title.trim();
+    const date = state.date;
+    let time = state.time;
+    const duration = Number(state.duration);
+
+    if (!title) throw new Error("Podaj nazwę zadania.");
+    if (!date) throw new Error("Wybierz datę.");
+    if (!time) throw new Error("Wybierz godzinę.");
+    if (!Number.isFinite(duration) || duration < 1 || duration > 1440)
+      throw new Error("Czas trwania musi być w zakresie 1–1440 min.");
+
+    // dtime parsuje "HH:MM", ale czasem ładniej podać pełny format
+    if (/^\d{2}:\d{2}$/.test(time)) time = `${time}:00`;
+
+    const payload = { title, date, time, duration, task_type: "single" }; // ⬅️ jawnie single
+
+    if (state.color) payload.color = state.color;
+    if (state.project_id) payload.project_id = Number(state.project_id);
+
+    if (state.repeat_days.length) {
+      payload.repeat_days = state.repeat_days;
+      if (state.repeat_until) payload.repeat_until = state.repeat_until;
+    }
+
+    return payload;
+  }
+
+  async function submit(e) {
     e.preventDefault();
     setError("");
-
-    if (!title || !date || !time || duration <= 0) {
-      setError("Uzupełnij wszystkie pola.");
-      return;
-    }
-    if (repeatOn) {
-      if (!repeatDays.length) { setError("Zaznacz dni powtarzania."); return; }
-      if (!repeatUntil) { setError("Ustaw datę zakończenia."); return; }
-      if (new Date(repeatUntil) < new Date(date)) { setError("Data zakończenia przed datą startu."); return; }
-    }
-
-    const payload = { title, description, date, time, duration, task_type: type, color, priority };
-    if (repeatOn) { payload.repeat_days = repeatDays; payload.repeat_until = repeatUntil; }
-
     try {
-      setLoading(true);
-      const res = await fetch("http://localhost:8000/tasks", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload)
-      });
-
-      if (!res.ok) {
-        console.error("Błąd API:", res.status, await res.text());
-        throw new Error("Błąd zapisu");
-      }
-
-      onAdded && onAdded(await res.json());
-      // ✅ reset formularza
-      setTitle(""); setDescription(""); setTime(""); setDuration(60);
-      setRepeatOn(false); setRepeatDays([]); setRepeatUntil("");
-      if (!defaultDate) setDate("");
-      onClose && onClose();
-
-    } catch (err) {
-      console.error("Fetch error:", err);
-      setError("Nie udało się zapisać zadania.");
+      const payload = buildPayload();
+      setSaving(true);
+      const created = await postJSON(`/tasks`, payload); // proxy lub VITE_API_URL
+      onCreated?.(created);
+      onCancel?.();
+    } catch (e) {
+      console.error(e);
+      // Pokaż szczegóły walidacji z FastAPI, żeby szybko namierzyć pole
+      setError(
+        e.message.includes("422")
+          ? `Błędne dane (422): ${e.message.replace(/^HTTP 422:\s*/, "")}`
+          : "Nie udało się dodać zadania."
+      );
     } finally {
-      setLoading(false);
+      setSaving(false);
     }
-  };
+  }
 
   return (
-    <form className="task-form" onSubmit={handleSubmit}>
-      <div className="form-group full">
-        <label className="field-label">Tytuł zadania</label>
-        <input type="text" value={title} onChange={e => setTitle(e.target.value)} />
-      </div>
+    <form className="task-form" onSubmit={submit}>
+      <h3>Nowe zadanie</h3>
 
-      <div className="form-group full">
-        <label className="field-label">Opis</label>
-        <textarea className="title-field" value={description} onChange={e => setDescription(e.target.value)} />
-      </div>
+      {errFetch && <div className="form-error">{errFetch}</div>}
 
-      <div className="row-main">
+      <div className="row two">
         <div className="form-group">
-          <label className="field-label">Data</label>
-          <input type="date" value={date} onChange={e => setDate(e.target.value)} />
+          <label>Projekt <span style={{opacity:.7}}>(opcjonalnie)</span></label>
+          <select
+            value={state.project_id}
+            onChange={(e) => setState({ ...state, project_id: e.target.value })}
+            disabled={loading}
+          >
+            <option value="">— bez projektu —</option>
+            {projects.map((p) => (
+              <option key={p.id} value={p.id}>{p.title}</option>
+            ))}
+          </select>
         </div>
+
         <div className="form-group">
-          <label className="field-label">Godzina</label>
-          <input type="time" value={time} onChange={e => setTime(e.target.value)} />
-        </div>
-        <div className="form-group">
-          <label className="field-label">Czas trwania (min)</label>
-          <input type="number" min="1" value={duration} onChange={e => setDuration(+e.target.value)} />
-        </div>
-        <div className="form-group">
-          <label className="field-label">Typ zadania</label>
-          <TaskTypeDropdown value={type} onChange={setType} />
-        </div>
-        <div className="form-group">
-          <label className="field-label">Priorytet</label>
-          <div className="dropdown-color">
-            <div
-              className="color-selected priority"
-              style={{ backgroundColor: PRIORITY_COLORS.find(p => p.value === priority).color }}
-              onClick={() => setShowPriority(v => !v)}
-            >
-              {priority}
-            </div>
-            {showPriority &&
-              <div className="color-options priority-dropdown">
-                {PRIORITY_COLORS.map(p =>
-                  <div key={p.value}
-                       className="color-option"
-                       style={{ backgroundColor: p.color }}
-                       onClick={() => { setPriority(p.value); setShowPriority(false); }}>
-                    {p.value}
-                  </div>
-                )}
-              </div>}
-          </div>
-        </div>
-        <div className="form-group">
-          <label className="field-label">Kolor zadania</label>
-          <div className="dropdown-color">
-            <div className="color-selected" style={{ backgroundColor: color }} onClick={() => setShowColors(v => !v)} />
-            {showColors &&
-              <div className="color-options">
-                {TASK_COLORS.map(c =>
-                  <div key={c} className="color-option" style={{ backgroundColor: c }}
-                       onClick={() => { setColor(c); setShowColors(false); }} />
-                )}
-              </div>}
-          </div>
-        </div>
-        <div className="form-group repeat-inline">
-          <label className="field-label">Powtarzać?</label>
-          <input type="checkbox" checked={repeatOn} onChange={e => setRepeatOn(e.target.checked)} />
+          <label>Nazwa zadania *</label>
+          <input
+            type="text"
+            value={state.title}
+            onChange={(e) => setState({ ...state, title: e.target.value })}
+            placeholder="np. Telefon do klienta"
+            required
+          />
         </div>
       </div>
 
-      {repeatOn && (
-        <div className="repeat-row">
-          <div className="weekday-picker">
-            {week.map((lbl, i) =>
-              <button type="button" key={i}
-                      className={repeatDays.includes(i) ? "weekday-btn active" : "weekday-btn"}
-                      onClick={() => toggleDay(i)}>
-                {lbl}
-              </button>
-            )}
-          </div>
-          <div className="form-group">
-            <label className="field-label">Powtarzaj do</label>
-            <input type="date" value={repeatUntil} onChange={e => setRepeatUntil(e.target.value)} />
+      <div className="row two">
+        <div className="form-group">
+          <label>Data *</label>
+          <input
+            type="date"
+            value={state.date}
+            onChange={(e) => setState({ ...state, date: e.target.value })}
+            required
+          />
+        </div>
+        <div className="form-group">
+          <label>Godzina *</label>
+          <input
+            type="time"
+            value={state.time}
+            onChange={(e) => setState({ ...state, time: e.target.value })}
+            required
+          />
+        </div>
+      </div>
+
+      <div className="row two">
+        <div className="form-group">
+          <label>Czas trwania (min) *</label>
+          <input
+            type="number"
+            min="1"
+            max="1440"
+            value={state.duration}
+            onChange={(e) => setState({ ...state, duration: e.target.value })}
+            required
+          />
+        </div>
+        <div className="form-group">
+          <label>Kolor (opcjonalnie)</label>
+          <input
+            type="color"
+            value={state.color}
+            onChange={(e) => setState({ ...state, color: e.target.value })}
+          />
+        </div>
+      </div>
+
+      <div className="row two">
+        <div className="form-group">
+          <label>Powtarzaj do (opcjonalnie)</label>
+          <input
+            type="date"
+            value={state.repeat_until}
+            onChange={(e) => setState({ ...state, repeat_until: e.target.value })}
+          />
+        </div>
+        <div className="form-group">
+          <label>Dni powtarzania (opcjonalnie)</label>
+          <div className="dow-picker">
+            {DOW.map((label, idx) => {
+              const active = state.repeat_days.includes(idx);
+              return (
+                <button
+                  key={idx}
+                  type="button"
+                  className={`dow-btn ${active ? "active" : ""}`}
+                  onClick={() => toggleDay(idx)}
+                  aria-pressed={active}
+                >
+                  {label}
+                </button>
+              );
+            })}
           </div>
         </div>
-      )}
+      </div>
 
-      {error && <div className="task-error">{error}</div>}
+      {error && <div className="form-error">{error}</div>}
 
       <div className="row-bottom">
-        <button type="submit" className="submit-btn" disabled={loading}>
-          {loading ? "..." : "Dodaj"}
+        <button type="button" className="submit-btn.ghost" onClick={onCancel} disabled={saving}>
+          Anuluj
+        </button>
+        <button className="submit-btn" disabled={saving}>
+          {saving ? "Zapisywanie…" : "➕ Dodaj"}
         </button>
       </div>
     </form>

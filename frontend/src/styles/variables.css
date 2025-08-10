@@ -1,13 +1,66 @@
+/* Base tokens — LIGHT as default */
 :root {
-  /* Kolory motywu */
-  --graphite: #121212;
-  --turquoise: #00e5ff;
-  --purple: #bb86fc;
-  --gray: #b0bec5;
-  --white: #ffffff;
-  --panel: rgba(255, 255, 255, 0.04);
+  /* surfaces */
+  --bg: #f6f7fb;
+  --panel: #ffffff;
+  --graphite: #16181d;
 
-  /* Wysokość podstawowa */
-  --field-height: 40px;
+  /* text */
+  --text: #0f1222;
+  --text-muted: #373a46;
+  --gray: #6b7185; /* NEW: used by hour labels, hints, etc. */
+
+  /* accents */
+  --turquoise: #39e0cf;
+  --purple: #b37dff;
+  --white: #ffffff;
+
+  /* borders/shadows */
+  --border: rgba(15, 18, 34, .12);
+  --border-strong: rgba(15, 18, 34, .18);
+  --shadow: 0 4px 14px rgba(0,0,0,.08);
 }
 
+/* DARK */
+:root[data-theme="dark"] {
+  --bg: #0d0f14;
+  --panel: #151922;
+  --graphite: #0d0f14;
+
+  --text: rgba(255,255,255,.92);
+  --text-muted: rgba(255,255,255,.75);
+  --gray: rgba(255,255,255,.65); /* NEW */
+
+  --turquoise: #40e0d0;
+  --purple: #b37dff;
+  --white: #ffffff;
+
+  --border: rgba(255,255,255,.12);
+  --border-strong: rgba(255,255,255,.18);
+  --shadow: 0 4px 14px rgba(0,0,0,.6);
+}
+
+/* NEON (przykładowy trzeci motyw) */
+:root[data-theme="neon"] {
+  --bg: #04040a;
+  --panel: #0b0c16;
+  --graphite: #06070d;
+
+  --text: #e2f2ff;
+  --text-muted: #a6b3c7;
+  --gray: #9aa6bf; /* NEW */
+
+  --turquoise: #00ffd1;
+  --purple: #9c5bff;
+  --white: #ffffff;
+
+  --border: rgba(0,255,209,.18);
+  --border-strong: rgba(156,91,255,.28);
+  --shadow: 0 6px 18px rgba(0,255,209,.12);
+}
+
+/* Global usage */
+html, body, #root {
+  background: var(--bg);
+  color: var(--text);
+}

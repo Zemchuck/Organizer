@@ -1,296 +1,143 @@
 @import '../styles/variables.css';
 @import '../styles/utilities.css';
 
-
-
-/* === OGÓLNE ========================================================= */
 .task-form {
+  background: var(--panel);
+  border-radius: 12px;
+  box-shadow: 0 4px 14px rgba(0,0,0,.6);
+  padding: 1rem;
   display: flex;
   flex-direction: column;
-  gap: 0.25rem;
-  margin-top: 2rem;
+  gap: .75rem;
+  min-width: 300px;
 }
 
-
-/* wiersz główny */
-.row-main {
-display: flex;
-gap: 0.3rem;
-flex-wrap: wrap;
-align-items: center;
+.task-form h3 {
+  margin: 0 0 .25rem 0;
+  color: var(--turquoise);
+  font-family: "Oxanium", sans-serif;
 }
 
-/* każda grupa pól */
-.form-group {
-flex: 1 1 150px;
-min-width: 120px;
-display: flex;
-flex-direction: column;
-justify-content: center;
-margin-top: 0.1rem;
-}
+.row { display: flex; gap: .75rem; flex-wrap: wrap; }
+.row.two .form-group { flex: 1 1 240px; }
 
-/* etykiety */
-.field-label {
-display: flex;
-align-items: center;
-height: var(--field-height);
-line-height: var(--field-height);
-font-family: "Oxanium", sans-serif;
-font-weight: 600;
-font-style: italic;
-font-size: 0.8rem;
-color: var(--purple);
-background: var(--panel);
-border-radius: 6px;
-padding: 0 8px;
-margin-bottom: 2px;
-}
-.field-label::after { content: ":"; }
+.form-group { display: flex; flex-direction: column; gap: .35rem; min-width: 0; }
 
-/* tytuł */
-.title-field {
-width: 100%;
-padding: 0.75rem 0.75rem;
-background: var(--panel);
-border: 1px solid rgba(255, 255, 255, 0.12);
-border-radius: 6px;
-font-size: 1rem;
-color: inherit;
-box-sizing: border-box;
-outline: none;
-height: 80px;
-line-height: 1.2;
-}
-
-/* inputy */
 .task-form input[type="text"],
 .task-form input[type="date"],
-.time-input,
-.task-form input[type="number"] {
-background: var(--panel);
-border: 1px solid rgba(255, 255, 255, 0.12);
-border-radius: 6px;
-padding: 0 0.75rem;
-font-size: 0.9rem;
-color: inherit;
-width: 100%;
-box-sizing: border-box;
-outline: none;
-appearance: none;
-height: var(--field-height);
-line-height: 1.1;
-display: flex;
-align-items: center;
+.task-form input[type="time"],
+.task-form input[type="number"],
+.task-form input[type="color"],
+.task-form select {
+  background: var(--panel);
+  border: 1px solid rgba(255,255,255,.12);
+  border-radius: 8px;
+  padding: .5rem .7rem;
+  color: var(--white);
 }
 
-/* focus */
-.task-form input:focus,
-.custom-select-button:focus {
-border-color: var(--turquoise);
-box-shadow: 0 0 6px rgba(64, 224, 208, 0.5);
+/* ✅ opcje w select – ciemne tło, jasny tekst */
+.task-form select option {
+  background: var(--panel);
+  color: var(--white);
 }
 
-/* repeat row */
-.repeat-row {
-display: flex;
-gap: 1rem;
-flex-wrap: wrap;
-align-items: flex-end;
-margin-bottom: 0.5rem;
+.dow-picker { display: flex; gap: .35rem; flex-wrap: wrap; }
+.dow-btn {
+  border: 1px solid rgba(255,255,255,.22);
+  background: transparent;
+  color: var(--white);
+  border-radius: 8px;
+  padding: .35rem .6rem;
+  cursor: pointer;
+  transition: background .15s, border-color .15s, transform .05s;
 }
+.dow-btn.active { background: rgba(255,255,255,.1); border-color: rgba(255,255,255,.35); }
+.dow-btn:active { transform: scale(.98); }
 
-/* dni tygodnia */
-.weekday-picker {
-display: flex;
-gap: 0.4rem;
-flex-wrap: nowrap;
-overflow-x: auto;
-}
-.weekday-btn {
-display: inline-flex;
-align-items: center;
-justify-content: center;
-width: 42px;
-height: 42px;
-font-size: 0.75rem;
-font-weight: 600;
-color: var(--gray);
-border: 1px solid rgba(255, 255, 255, 0.12);
-border-radius: 6px;
-cursor: pointer;
-transition: background 0.2s, color 0.2s, box-shadow 0.2s, border-color 0.2s;
-box-sizing: border-box;
-}
-.weekday-btn input { display: none; }
-.weekday-btn:hover { border-color: var(--turquoise); }
-.weekday-btn.active {
-background: var(--turquoise);
-color: var(--graphite);
-box-shadow: 0 0 6px var(--turquoise);
-border-color: var(--turquoise);
-}
-
-/* toggle powtarzania */
-.repeat-toggle {
-display: flex;
-align-items: center;
-gap: 0.25rem;
-font-size: 0.85rem;
-}
-.repeat-toggle input { accent-color: var(--turquoise); }
-
-/* custom dropdown Typ zadania */
-.custom-select {
-position: relative;
-width: 100%;
-font-size: 0.9rem;
-user-select: none;
-}
-.custom-select-button {
-display: flex;
-justify-content: space-between;
-align-items: center;
-background: var(--panel);
-border: 1px solid rgba(255, 255, 255, 0.12);
-border-radius: 6px;
-padding: 0 0.75rem;
-cursor: pointer;
-gap: 0.5rem;
-width: 100%;
-color: inherit;
-height: var(--field-height);
-}
-.custom-select-button:focus { outline: 2px solid var(--turquoise); }
-.custom-select-list {
-position: absolute;
-top: calc(100% + 4px);
-left: 0;
-right: 0;
-background: var(--panel);
-border: 1px solid rgba(255, 255, 255, 0.15);
-border-radius: 6px;
-padding: 4px 0;
-z-index: 300;
-box-shadow: 0 12px 32px rgba(0, 0, 0, 0.5);
-max-height: 220px;
-overflow-y: auto;
-}
-.custom-select-item {
-padding: 8px 12px;
-cursor: pointer;
-white-space: nowrap;
-font-size: 0.9rem;
-color: inherit;
-transition: background 0.15s;
-}
-.custom-select-item:hover,
-.custom-select-item.active { background: rgba(64, 224, 208, 0.1); }
-
-/* przycisk Dodaj */
-.row-bottom { display: flex; justify-content: center; padding-top: 0.25rem; }
-.button-wrapper { display: flex; justify-content: center; width: 100%; }
+.row-bottom { display: flex; gap: .5rem; justify-content: flex-end; }
 .submit-btn {
-padding: 0.55rem 1.2rem;
-border: none;
-border-radius: 6px;
-background: linear-gradient(135deg, var(--purple), var(--turquoise));
-color: var(--graphite);
-font-family: "Oxanium", sans-serif;
-font-weight: 600;
-cursor: pointer;
-transition: transform 0.1s, filter 0.2s;
-min-width: 150px;
+  padding: .55rem 1rem;
+  border-radius: 8px;
+  border: none;
+  font-weight: 700;
+  cursor: pointer;
+  background: linear-gradient(135deg, var(--purple), var(--turquoise));
+  color: var(--graphite);
 }
-.submit-btn:hover { filter: brightness(1.1); }
-.submit-btn:active { transform: scale(0.96); }
-.submit-btn:disabled { opacity: 0.6; cursor: not-allowed; }
-
-/* błąd */
-.task-error { font-size: 0.8rem; color: #ff6b6b; margin-top: 4px; }
-
-/* ✅ Dropdown dla koloru i priorytetu */
-.dropdown-color {
-display: flex;
-align-items: center;
-position: relative;
+.submit-btn.ghost {
+  background: transparent;
+  color: var(--white);
+  border: 1px solid rgba(255,255,255,.22);
 }
 
-/* ✅ Wybrany priorytet – większy kwadrat z numerem */
-.color-selected.priority {
-width: 40px;
-height: 40px;
-font-size: 1rem;
-display: flex;
-align-items: center;
-justify-content: center;
-font-weight: bold;
-color: var(--graphite);
-border: 2px solid var(--turquoise);
-border-radius: 6px;
+.form-error {
+  color: #ffb3ad;
+  background: rgba(255, 99, 71, .1);
+  border: 1px solid rgba(255, 99, 71, .35);
+  border-radius: 8px;
+  padding: .5rem .7rem;
+}
+/* === Fancy color picker ================================================== */
+.task-form input[type="color"] {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 44px;
+  height: 34px;
+  padding: 0;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+
+  /* delikatna ramka i tło pod swatch */
+  background: linear-gradient(135deg, var(--purple), var(--turquoise));
+  box-shadow:
+    inset 0 0 0 2px rgba(0,0,0,.25),
+    0 1px 3px rgba(0,0,0,.35);
+  transition: transform .06s ease, box-shadow .15s ease, filter .15s ease;
 }
 
-/* ✅ Wybrany kolor zadania */
-.color-selected {
-width: 36px;
-height: 36px;
-border-radius: 6px;
-cursor: pointer;
-border: 2px solid var(--turquoise);
-box-shadow: 0 0 4px rgba(0,0,0,0.3);
+/* Wejściówka: zaokrąglenia i ramki samego „swatcha” */
+.task-form input[type="color"]::-webkit-color-swatch-wrapper {
+  padding: 2px;
+  border-radius: 10px;
+}
+.task-form input[type="color"]::-webkit-color-swatch {
+  border: 1px solid rgba(0,0,0,.28);
+  border-radius: 8px;
+}
+.task-form input[type="color"]::-moz-color-swatch {
+  border: 1px solid rgba(0,0,0,.28);
+  border-radius: 8px;
 }
 
-/* ✅ Dropdown kolorów zadania – większe kwadraty w siatce 3x4 */
-.color-options {
-display: grid;
-grid-template-columns: repeat(3, 36px);
-grid-template-rows: repeat(4, 36px);
-gap: 8px;
-position: absolute;
-left: 48px;
-top: 0;
-background: var(--panel);
-padding: 8px;
-border-radius: 6px;
-box-shadow: 0 0 8px rgba(0,0,0,0.5);
-z-index: 999;
+/* Hover/active/focus – przyjemne, bez krzykliwości */
+.task-form input[type="color"]:hover {
+  filter: brightness(1.03);
+  box-shadow:
+    inset 0 0 0 2px rgba(0,0,0,.25),
+    0 2px 6px rgba(0,0,0,.45);
+}
+.task-form input[type="color"]:active {
+  transform: scale(.98);
+}
+.task-form input[type="color"]:focus-visible {
+  outline: 2px solid var(--turquoise);
+  outline-offset: 3px;
 }
 
-.color-option {
-width: 36px;
-height: 36px;
-border-radius: 6px;
-cursor: pointer;
-border: 2px solid transparent;
-transition: transform 0.2s, border 0.2s;
+/* (opcjonalnie) wersja w mini formularzu z popovera */
+.task-form-simple input[type="color"] {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 42px;
+  height: 32px;
+  padding: 0;
+  border: none;
+  border-radius: 10px;
+  background: linear-gradient(135deg, var(--purple), var(--turquoise));
+  box-shadow: inset 0 0 0 2px rgba(0,0,0,.25), 0 1px 3px rgba(0,0,0,.35);
 }
-.color-option:hover {
-transform: scale(1.1);
-border: 2px solid var(--turquoise);
-}
-
-/* ✅ Dropdown priorytetów – większe kwadraty w linii */
-.color-options.priority-dropdown {
-display: grid;
-grid-template-columns: repeat(2, 40px);
-grid-template-rows: repeat(2, 40px);
-gap: 8px;
-position: absolute;
-left: 48px;
-top: 0;
-background: var(--panel);
-padding: 6px;
-border-radius: 6px;
-box-shadow: 0 0 8px rgba(0,0,0,0.5);
-z-index: 999;
-}
-
-.color-options.priority-dropdown .color-option {
-width: 40px;
-height: 40px;
-border-radius: 6px;
-font-size: 1rem;
-font-weight: bold;
-color: var(--graphite);
-}
-
+.task-form-simple input[type="color"]::-webkit-color-swatch-wrapper { padding: 2px; border-radius: 10px; }
+.task-form-simple input[type="color"]::-webkit-color-swatch { border: 1px solid rgba(0,0,0,.28); border-radius: 8px; }
+.task-form-simple input[type="color"]::-moz-color-swatch { border: 1px solid rgba(0,0,0,.28); border-radius: 8px; }

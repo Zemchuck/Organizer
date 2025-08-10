@@ -1,79 +1,156 @@
 @import '../styles/variables.css';
-@import '../styles/utilities.css';
 
-/* 🔹 Siatka miesiąca */
-.month-grid {
+.month-shell {
+  display: grid;
+  gap: .6rem;
+}
+
+/* toolbar / pills — bez zmian z poprzedniej wersji */
+.month-toolbar {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+}
+
+.right-actions {
+  display: inline-flex;
+  gap: .5rem;
+}
+
+.btn.ghost {
+  height: 32px;
+  padding: 0 .8rem;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--white);
+}
+
+.mode-switch {
+  display: inline-flex;
+  gap: .35rem;
+}
+
+.mode-switch .pill {
+  height: 30px;
+  padding: 0 .8rem;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--white);
+}
+
+.mode-switch .pill.active {
+  background: linear-gradient(135deg, var(--purple), var(--turquoise));
+  color: var(--graphite);
+  border-color: transparent;
+}
+
+/* head / body siatki – bez zmian */
+.month-grid-head {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
-  grid-auto-rows: 100px;
-  border-top: 1px solid rgba(255,255,255,0.1);
-  border-left: 1px solid rgba(255,255,255,0.1);
-  background: var(--panel);
+  border: 1px solid var(--border);
+  border-bottom: none;
 }
 
-/* 🔹 Komórki nagłówków (dni tygodnia) */
-.month-head {
+.head-cell {
   text-align: center;
-  font-weight: 600;
-  padding: 6px 0;
-  background: var(--panel);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-  border-right: 1px solid rgba(255, 255, 255, 0.1);
-  color: var(--purple);
-  font-size: 0.85rem;
+  padding: .45rem 0;
+  color: var(--white);
+  font-weight: 800;
+  border-right: 1px solid var(--border);
 }
 
-/* 🔹 Komórki dni */
-.month-cell {
-  min-height: 90px;
-  padding: 4px;
-  background: var(--panel);
-  border-right: 1px solid rgba(255,255,255,0.1);
-  border-bottom: 1px solid rgba(255,255,255,0.1);
+.head-cell:last-child {
+  border-right: none;
+}
+
+.month-grid-body {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  border: 1px solid var(--border);
+  border-top: none;
+}
+
+.day-cell {
+  min-height: 100px;
+  border-right: 1px solid var(--border);
+  border-top: 1px solid var(--border);
+  padding: .45rem .5rem;
   position: relative;
-  cursor: pointer;
-  transition: background 0.15s ease-in-out;
 }
 
-/* 🔹 Puste komórki (z poprzedniego / następnego miesiąca) */
-.month-cell.empty {
-  background: rgba(255,255,255,0.02);
-  pointer-events: none;
-  opacity: 0.3;
+.day-cell:nth-child(-n+7) {
+  border-top: none;
 }
 
-/* 🔹 Hover efekt */
-.month-cell:hover:not(.empty) {
-  background: rgba(64, 224, 208, 0.08);
+.day-cell:nth-child(7n) {
+  border-right: none;
 }
 
-/* 🔹 Dzisiejszy dzień */
-.month-cell.today {
-  background: rgba(64,224,208,0.15);
-  border: 2px solid var(--turquoise);
-  box-shadow: inset 0 0 6px rgba(64,224,208,0.4);
+.day-cell.muted {
+  opacity: .65;
 }
 
-/* 🔹 Licznik zadań w dniu */
-.task-count {
+.day-cell.selected {
+  outline: 2px solid var(--turquoise);
+  outline-offset: -2px;
+  border-radius: 6px;
+}
+
+.day-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  color: var(--white);
+  font-weight: 700;
+}
+
+.mini-add {
+  height: 24px;
+  min-width: 24px;
+  display: inline-grid;
+  place-items: center;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: transparent;
+  color: var(--white);
+}
+
+.mini-add:hover {
+  background: rgba(255, 255, 255, .06);
+  border-color: var(--border-strong);
+}
+
+/* ✅ mini-bloczki zamiast kropek */
+.mini-items {
+  margin-top: .45rem;
+  display: grid;
+  grid-auto-rows: 10px;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 6px;
+  align-content: start;
+}
+
+.mini-block {
+  height: 10px;
+  border-radius: 3px;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, .12) inset;
+}
+
+/* ❌ przekątne dla nawyków */
+.mini-block.habit {
+  position: relative;
+}
+
+.mini-block.habit::before,
+.mini-block.habit::after {
+  content: "";
   position: absolute;
-  bottom: 4px;
-  right: 4px;
-  background: var(--turquoise);
-  color: var(--graphite);
-  font-weight: 600;
-  font-size: 0.75rem;
-  padding: 2px 6px;
-  border-radius: 10px;
-  box-shadow: 0 0 4px rgba(0,0,0,0.3);
-}
-
-/* 🔹 Responsywność (opcjonalne) */
-@media (max-width: 768px) {
-  .month-grid {
-    grid-auto-rows: 80px;
-  }
-  .month-cell {
-    font-size: 0.8rem;
-  }
+  inset: 0;
+  background:
+    linear-gradient(45deg, rgba(0, 0, 0, .35) 0 1px, transparent 1px 100%),
+    linear-gradient(-45deg, rgba(0, 0, 0, .35) 0 1px, transparent 1px 100%);
+  opacity: .6;
 }
