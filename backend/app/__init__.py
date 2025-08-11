@@ -1,13 +1,14 @@
-from datetime import datetime, timedelta, timezone
+from datetime import date as ddate, datetime, timedelta, timezone
 from typing import List, Optional, Union
 import uuid
 
 from fastapi import FastAPI, Depends, HTTPException, Query, Body
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
+from sqlalchemy import and_
 
 from .db import Base, engine, get_db
-from .models import Task, Project, Goal, Habit, PriorityEnum
+from .models import Task, Project, Goal, Habit, PriorityEnum, HabitLog
 from .schemas import (
     # tasks
     TaskCreate, TaskRead, TaskUpdate,
@@ -16,6 +17,8 @@ from .schemas import (
     # goals/habits
     GoalCreate, GoalRead, GoalUpdate,
     HabitCreate, HabitRead, HabitUpdate,
+    # habit logs
+    HabitLogCreate, HabitProgressRead
 )
 
 # ───────────────── init ─────────────────
@@ -371,3 +374,98 @@ def habits_stats(db: Session = Depends(get_db)):
     total = db.query(Habit).count()
     active = db.query(Habit).filter(Habit.active.is_(True)).count()
     return {"total_habits": total, "active_habits": active}
+
+# ───────── HABIT LOGS + PROGRESS ─────────
+
+def _week_bounds(today: ddate) -> tuple[ddate, ddate]:
+    # poniedziałek..niedziela dla „dzisiaj”
+    start = today - timedelta(days=today.weekday())  # 0=Mon
+    end = start + timedelta(days=6)
+    return start, end
+
+def _mask_to_days(mask: int) -> list[int]:
+    # jeśli masz już taką funkcję wyżej – usuń duplikat
+    return [i for i in range(7) if (mask >> i) & 1]
+
+@app.post("/habits/{habit_id}/logs", status_code=201)
+def mark_habit(habit_id: int, body: HabitLogCreate, db: Session = Depends(get_db)):
+    h = db.query(Habit).filter(Habit.id == habit_id).first()
+    if not h:
+        raise HTTPException(404, "Habit not found")
+    log = HabitLog(habit_id=habit_id, done_on=body.done_on)
+    db.add(log)
+    try:
+        db.commit()
+    except Exception:
+        db.rollback()  # duplikat – traktuj idempotentnie
+    return {"ok": True}
+
+@app.delete("/habits/{habit_id}/logs/{done_on}", status_code=204)
+def unmark_habit(habit_id: int, done_on: ddate, db: Session = Depends(get_db)):
+    row = db.query(HabitLog).filter(
+        HabitLog.habit_id == habit_id, HabitLog.done_on == done_on
+    ).first()
+    if row:
+        db.delete(row)
+        db.commit()
+
+@app.get("/habits/progress", response_model=list[HabitProgressRead])
+def habits_progress(db: Session = Depends(get_db)):
+    today = ddate.today()
+    week_start, week_end = _week_bounds(today)
+
+    habits = db.query(Habit).all()
+    if not habits:
+        return []
+
+    # pobierz logi od minimalnej start_date (wystarczy do wyliczenia serii)
+    min_date = min(h.start_date for h in habits)
+    logs = db.query(HabitLog).filter(HabitLog.done_on >= min_date).all()
+
+    # indeks: habit_id -> set(dat)
+    by_habit: dict[int, set[ddate]] = {}
+    for lg in logs:
+        by_habit.setdefault(lg.habit_id, set()).add(lg.done_on)
+
+    out: list[HabitProgressRead] = []
+
+    for h in habits:
+        days = _mask_to_days(h.days_mask or 0)
+
+        # target tygodniowy = ile zaplanowanych dni z tego habit-u wpada w bieżący tydzień i mieści się w [start_date, repeat_until]
+        target = 0
+        for d in days:
+            # d = 0..6, Monday..Sunday; policz faktyczną datę tego dnia w bieżącym tygodniu
+            day = week_start + timedelta(days=(d - week_start.weekday()) % 7)
+            if day < h.start_date:
+                continue
+            if h.repeat_until and day > h.repeat_until:
+                continue
+            if week_start <= day <= week_end:
+                target += 1
+
+        week_done = sum(1 for d in (by_habit.get(h.id) or set()) if week_start <= d <= week_end)
+
+        # seria: cofaj się dzień po dniu, licząc tylko dni zaplanowane w 'days'
+        streak = 0
+        cursor = today
+        if h.repeat_until and cursor > h.repeat_until:
+            cursor = h.repeat_until
+        while cursor >= h.start_date:
+            if cursor.weekday() not in days:
+                cursor -= timedelta(days=1)
+                continue
+            if cursor in (by_habit.get(h.id) or set()):
+                streak += 1
+                cursor -= timedelta(days=1)
+            else:
+                break
+
+        out.append(HabitProgressRead(
+            habit_id=h.id,
+            streak=streak,
+            week_done=week_done,
+            week_target=target
+        ))
+
+    return out

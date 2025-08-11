@@ -156,7 +156,14 @@ class TaskRead(TaskBase):
     model_config = {"from_attributes": True}
 
 
-# ───────── HABITS (cele) ─────────
+# ───────── HABITS ─────────
+from datetime import date as ddate, time as dtime
+from typing import List, Optional
+from pydantic import BaseModel, Field, field_validator, model_validator
+import re
+
+HEX = re.compile(r"^#[0-9A-Fa-f]{6}$")
+
 class HabitBase(BaseModel):
     title: Optional[str] = None
     description: Optional[str] = None
@@ -175,6 +182,18 @@ class HabitBase(BaseModel):
 
     model_config = {"from_attributes": True}
 
+    @field_validator("color")
+    @classmethod
+    def _color_hex(cls, v):
+        if v is None: return v
+        if not HEX.match(v): raise ValueError("color must be #RRGGBB")
+        return v
+
+    @field_validator("time_of_day")
+    @classmethod
+    def _truncate_seconds(cls, v: Optional[dtime]):
+        if v is None: return v
+        return v.replace(second=0, microsecond=0)
 
 class HabitCreate(HabitBase):
     title: str
@@ -184,33 +203,61 @@ class HabitCreate(HabitBase):
     time_of_day: dtime
     duration: int = Field(ge=1, le=1440)
 
-    repeat_days: List[int] = []          # 0..6 (Pn..Nd)
+    repeat_days: List[int] = Field(default_factory=list)   # 0..6 (Pn..Nd)
     repeat_until: Optional[ddate] = None
 
     @field_validator("repeat_days")
     @classmethod
-    def _validate_days(cls, v):
-        v = v or []
+    def _validate_days(cls, v: List[int]):
+        v = sorted(set(v or []))
         if any((d < 0 or d > 6) for d in v):
             raise ValueError("repeat_days musi zawierać wartości 0..6")
         return v
 
+    @model_validator(mode="after")
+    def _range_check(self):
+        if self.repeat_until and self.repeat_until < self.start_date:
+            raise ValueError("repeat_until nie może być przed start_date")
+        return self
 
 class HabitUpdate(HabitBase):
     @field_validator("duration")
     @classmethod
     def _duration_range(cls, v):
-        if v is None:
-            return v
+        if v is None: return v
         if not (1 <= v <= 1440):
             raise ValueError("duration must be between 1 and 1440 minutes")
         return v
 
+    @field_validator("repeat_days")
+    @classmethod
+    def _validate_days_update(cls, v: Optional[List[int]]):
+        if v is None: return v
+        v = sorted(set(v))
+        if any((d < 0 or d > 6) for d in v):
+            raise ValueError("repeat_days musi zawierać wartości 0..6")
+        return v
+
+    @model_validator(mode="after")
+    def _range_check(self):
+        if self.repeat_until and self.start_date and self.repeat_until < self.start_date:
+            raise ValueError("repeat_until nie może być przed start_date")
+        return self
 
 class HabitRead(HabitBase):
     id: int
-    repeat_days: List[int] = []
+    repeat_days: List[int] = Field(default_factory=list)
     model_config = {"from_attributes": True}
+
+# logowanie wykonań + progres
+class HabitLogCreate(BaseModel):
+    done_on: ddate = Field(default_factory=lambda: ddate.today())
+
+class HabitProgressRead(BaseModel):
+    habit_id: int
+    streak: int
+    week_done: int
+    week_target: int
 
 
 # ───────── Projekty/Cele ─────────

@@ -111,12 +111,15 @@ class Habit(Base):
     duration     = Column(Integer, nullable=False, default=25)
     days_mask    = Column(Integer, nullable=False, default=0)   # bitmask 0..127 (Pn..Nd)
     repeat_until = Column(Date, nullable=True)
-    logs = relationship("HabitLog", back_populates="habit", cascade="all, delete-orphan")
+
     # przynależność do celu – WYMAGANA
     goal_id = Column(Integer, ForeignKey("goals.id"), nullable=False)
 
     # porządek w ramach celu
     order = Column(Integer, nullable=True)
+
+    # NOWE: relacja do logów
+    logs = relationship("HabitLog", back_populates="habit", cascade="all, delete-orphan")
 
     goal: Optional[Goal] = relationship("Goal", back_populates="habits")
 
@@ -124,13 +127,19 @@ class Habit(Base):
         Index("ix_habits_goal_order", "goal_id", "order"),
         CheckConstraint("duration >= 1 AND duration <= 1440", name="ck_habits_duration_range"),
         CheckConstraint("days_mask >= 0 AND days_mask <= 127", name="ck_habits_days_mask"),
+        CheckConstraint("(repeat_until IS NULL) OR (repeat_until >= start_date)", name="ck_habits_repeat_until_range"),
     )
 
 class HabitLog(Base):
-    __tablename__ = "habit_logs"
-    id = Column(Integer, primary_key=True)
-    habit_id = Column(Integer, ForeignKey("habits.id"), nullable=False, index=True)
-    done_on = Column(Date, nullable=False)  # lokalna data wykonania
+    __tablename__      = "habit_logs"
+    __allow_unmapped__ = True
 
-    habit: Optional[Habit] = relationship("Habit", back_populates="logs")
-    __table_args__ = (UniqueConstraint("habit_id", "done_on", name="uq_habit_day"),)
+    id = Column(Integer, primary_key=True)
+    habit_id = Column(Integer, ForeignKey("habits.id", ondelete="CASCADE"), nullable=False, index=True)
+    done_on = Column(Date, nullable=False)  # lokalna data wykonania (YYYY-MM-DD)
+
+    habit = relationship("Habit", back_populates="logs")
+
+    __table_args__ = (
+        UniqueConstraint("habit_id", "done_on", name="uq_habit_day"),
+    )
