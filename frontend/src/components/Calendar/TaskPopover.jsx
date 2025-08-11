@@ -1,5 +1,7 @@
 import React, { useEffect } from "react";
 import TaskForm from "./TaskForm.jsx";
+import "./TaskPopover.css";
+
 
 export default function TaskPopover({ date, onClose, onCreated }) {
   // zamykanie ESC

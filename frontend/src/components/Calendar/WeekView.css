@@ -1,0 +1,357 @@
+/* ---------- Ustawienia ---------- */
+.week-view {
+  --hour-h: 30px;
+  /* wysokość 1h */
+  --gutter-w: 72px;
+  /* szersza rynna */
+  --grid-major: rgba(255, 255, 255, .22);
+  /* linie pełnej godziny */
+  --grid-major-w: 2px;
+  --grid-minor: rgba(255, 255, 255, .09);
+  /* półgodziny */
+  --grid-minor-w: 1px;
+  --grid-vert: rgba(255, 255, 255, .12);
+  /* pionowe separatory dni */
+  --now: #e53935;
+}
+
+/* ---------- Head ---------- */
+.week-head {
+  display: grid;
+  grid-template-columns: var(--gutter-w) repeat(7, minmax(180px, 1fr));
+  background: var(--panel);
+  border: 2px solid var(--border);
+}
+
+@media (min-width: 1400px) {
+  .week-head {
+    grid-template-columns: var(--gutter-w) repeat(7, minmax(220px, 1fr));
+  }
+}
+
+.head-cell {
+  display: grid;
+  place-items: center;
+  gap: .15rem;
+  padding: .45rem 0;
+  border-right: 1px solid var(--border);
+}
+
+.head-cell:last-child {
+  border-right: none;
+}
+
+.head-cell.gutter {
+  visibility: hidden;
+  border-right: none;
+}
+
+.head-cell .wd {
+  font-family: "Oxanium", sans-serif;
+  font-weight: 800;
+  color: var(--white);
+  text-transform: capitalize;
+}
+
+.head-cell .dm {
+  font-weight: 700;
+  color: var(--turquoise);
+}
+
+.head-cell.today {
+  background: linear-gradient(135deg, rgba(111, 234, 209, .9), rgba(5, 193, 155, .84));
+  box-shadow: inset 0 -1px 0 var(--border);
+}
+
+/* ---------- Grid ---------- */
+.week-grid {
+  position: relative;
+  display: grid;
+  grid-template-columns: var(--gutter-w) repeat(7, minmax(180px, 1fr));
+  border: 1px solid var(--border);
+  border-top: none;
+}
+
+@media (min-width: 1400px) {
+  .week-grid {
+    grid-template-columns: var(--gutter-w) repeat(7, minmax(220px, 1fr));
+  }
+}
+
+/* lewa kolumna z godzinami: same linie + overlay z etykietami */
+.hours-col {
+  position: relative;
+  border-right: 1px solid var(--border);
+  background:
+    /* pełne godziny */
+    repeating-linear-gradient(to bottom,
+      transparent,
+      transparent calc(var(--hour-h) - var(--grid-major-w)),
+      var(--grid-major) calc(var(--hour-h) - var(--grid-major-w)),
+      var(--grid-major) var(--hour-h));
+}
+
+.hour-row {
+  height: var(--hour-h);
+}
+
+/* etykiety godzin „przy linii” */
+.hour-labels {
+  position: absolute;
+  inset: 0 0 0 0;
+  pointer-events: none;
+}
+
+.hour-label-el {
+  position: absolute;
+  left: 6px;
+  transform: translateY(-50%);
+  /* środek etykiety na linii */
+}
+
+.hour-label {
+  display: inline-block;
+  font-size: .78rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--gray);
+  opacity: .9;
+}
+
+/* kolumny dni */
+.day-col {
+  position: relative;
+  min-height: calc(var(--hour-h) * 24);
+  border-right: 1px solid var(--grid-vert);
+  background:
+    repeating-linear-gradient(to bottom,
+      transparent,
+      transparent calc(var(--hour-h) - var(--grid-major-w)),
+      var(--grid-major) calc(var(--hour-h) - var(--grid-major-w)),
+      var(--grid-major) var(--hour-h));
+  overflow: hidden;
+}
+
+.day-col:last-child {
+  border-right: none;
+}
+
+/* now line & pin */
+.now-line {
+  position: absolute;
+  left: var(--gutter-w);
+  right: 0;
+  height: 2px;
+  background: var(--turquoise);
+  box-shadow: 0 0 0 1px var(--turquoise);
+  transform: translateY(-1px);
+  z-index: 3;
+  pointer-events: none;
+}
+
+.now-pin {
+  position: absolute;
+  right: -5px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--turquoise);
+  box-shadow: 0 0 0 2px rgba(6, 203, 238, .35);
+  transform: translateY(-50%);
+  z-index: 4;
+  pointer-events: none;
+}
+
+/* ---------- Event block ---------- */
+.event-block {
+  position: absolute;
+  border-radius: 8px;
+  color: var(--white);
+  padding: .15rem .35rem;
+  display: flex;
+  align-items: center;
+  gap: .35rem;
+  background: linear-gradient(180deg, rgba(255, 255, 255, .10), rgba(0, 0, 0, .05)), var(--ev-color, #7aa7ff);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, .35), inset 0 0 0 1px rgba(0, 0, 0, .15);
+  overflow: hidden;
+}
+
+/* „czystsze” kafle Habit – bez pasków, bez agresywnego gradientu */
+.event-block.habit {
+  background: linear-gradient(180deg, rgba(255, 255, 255, .06), rgba(0, 0, 0, .04)), var(--ev-color, #6fead1);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, .28), inset 0 0 0 1px rgba(255, 255, 255, .12);
+}
+
+.event-block.habit::before {
+  display: none;
+}
+
+/* wyłącz poprzedni wzorek */
+
+/* szybki checkbox */
+.ev-check {
+  width: 16px;
+  height: 16px;
+  border-radius: 4px;
+  border: 1px solid rgba(255, 255, 255, .7);
+  background: rgba(0, 0, 0, .12);
+  display: inline-block;
+  flex: 0 0 auto;
+}
+
+.ev-check.checked {
+  background: rgba(0, 0, 0, .25);
+  box-shadow: inset 0 0 0 2px rgba(255, 255, 255, .9);
+}
+
+.event-block.tiny .ev-check {
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+}
+
+.event-block.small .ev-check {
+  width: 14px;
+  height: 14px;
+  border-radius: 3px;
+}
+
+/* zamiast godziny – tytuł z prostym skalowaniem */
+.ev-title {
+  font-weight: 800;
+  line-height: 1.1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex: 1 1 auto;
+}
+
+.event-block.tiny .ev-title {
+  font-size: 10px;
+}
+
+.event-block.small .ev-title {
+  font-size: 11px;
+}
+
+.event-block.normal .ev-title {
+  font-size: 12px;
+}
+
+.event-block.large .ev-title {
+  font-size: 13px;
+}
+
+/* Done visuals */
+.event-block.done {
+  filter: saturate(.85);
+  opacity: .9;
+}
+
+.event-block.done .ev-title {
+  text-decoration: line-through;
+  opacity: .9;
+}
+
+/* ---------- Popovery ---------- */
+/* Task (zostaje prosty) */
+.task-popover-like .ep-title {
+  font-weight: 800;
+  margin-bottom: .25rem;
+}
+
+.task-popover-like .ep-desc {
+  opacity: .9;
+  margin-bottom: .35rem;
+}
+
+.task-popover-like .ep-times {
+  font-size: .85rem;
+  opacity: .85;
+  margin-bottom: .5rem;
+}
+
+.task-popover-like .ep-actions {
+  display: flex;
+  gap: .5rem;
+  justify-content: flex-end;
+}
+
+.pop-btn {
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--white);
+  padding: .35rem .6rem;
+  border-radius: 8px;
+}
+
+.pop-btn:hover {
+  background: rgba(255, 255, 255, .06);
+}
+
+/* Habit – styl jak w „Cele i Nawyki” */
+.event-pop.habit .habit-popover {
+  position: relative;
+  min-width: 18rem;
+  max-width: min(28rem, 90vw);
+  background: var(--surface-3, var(--panel));
+  color: var(--white);
+  border: 1px solid var(--border-strong);
+  border-radius: .7rem;
+  padding: .7rem .8rem;
+  box-shadow: 0 12px 24px rgba(0, 0, 0, .35);
+}
+
+.event-pop {
+  z-index: 9999;
+}
+
+.event-pop::before {
+  /* grot po lewej */
+  content: "";
+  position: absolute;
+  left: -8px;
+  top: 50%;
+  transform: translateY(-50%);
+  border-width: 8px;
+  border-style: solid;
+  border-color: transparent var(--panel) transparent transparent;
+  filter: drop-shadow(-1px 0 0 var(--border));
+}
+
+.popover-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: .35rem;
+}
+
+.popover-head strong {
+  color: var(--white);
+}
+
+.popover-head .status {
+  font-size: .8rem;
+  opacity: .85;
+  color: var(--turquoise);
+}
+
+.popover-desc {
+  font-size: .9rem;
+  opacity: .9;
+  margin-bottom: .4rem;
+}
+
+.popover-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .35rem .6rem;
+  font-size: .8rem;
+  opacity: .85;
+  margin-bottom: .6rem;
+}
+
+.popover-actions {
+  display: flex;
+  gap: .4rem;
+  justify-content: flex-end;
+}

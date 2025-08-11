@@ -1,4 +1,5 @@
-@import '../styles/variables.css';
+@import '../../styles/variables.css';
+@import '../../styles/utilities.css';
 
 .month-table {
   background: var(--panel);

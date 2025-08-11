@@ -1,12 +1,12 @@
+// src/App.jsx
 import React from "react";
 import { BrowserRouter as Router, Routes, Route, NavLink, Navigate } from "react-router-dom";
 
-import Calendar from "./components/Calendar.jsx";
-import ProjectsView from "./components/ProjectsView.jsx";
-import StatsHabits from "./components/StatsHabits.jsx";
+import Calendar from "./components/Calendar/Calendar.jsx";
+import ProjectsView from "./components/Projects/ProjectsView.jsx";
+import StatsHabits from "./components/Goals&Habits/StatsHabits.jsx";
 import TaskList from "./pages/TaskList.jsx";
-import PomodoroTimer from "./components/PomodoroTimer.jsx";
-
+import PomodoroTimer from "./components/Projects/PomodoroTimer.jsx";
 import ThemeToggle from "./components/ThemeToggle.jsx";
 
 export default function App() {
@@ -59,9 +59,7 @@ function NavItem({ to, children }) {
   return (
     <NavLink
       to={to}
-      className={({ isActive }) =>
-        "nav-link" + (isActive ? " active" : "")
-      }
+      className={({ isActive }) => "nav-link" + (isActive ? " active" : "")}
       style={({ isActive }) => ({
         padding: "0.45rem 0.7rem",
         borderRadius: 8,

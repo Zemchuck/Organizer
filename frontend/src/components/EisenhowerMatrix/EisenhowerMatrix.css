@@ -1,6 +1,5 @@
-/* src/components/EisenhowerMatrix.css */
-@import '../styles/variables.css';
-@import '../styles/utilities.css';
+@import '../../styles/variables.css';
+@import '../../styles/utilities.css';
 
 /* === Siatka 2 × 2 o równych komórkach =============================== */
 .matrix {

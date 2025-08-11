@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import "./StatsHabits.css";
-import CreateGoalForm from "./forms/CreateGoalForm.jsx";
-import HabitForm from "./forms/HabitForm.jsx";
+import CreateGoalForm from "./CreateGoalForm.jsx";
+import HabitForm from "./HabitForm.jsx";
 
 const API = import.meta.env.VITE_API_URL || "";
 

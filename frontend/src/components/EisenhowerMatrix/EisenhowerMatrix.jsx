@@ -1,6 +1,6 @@
 // src/components/EisenhowerMatrix.jsx
 import React, { useEffect, useState } from "react";
-import "./EisenhowerMatrix.css"; // Assuming you have a CSS file for styling
+import "./EisenhowerMatrix.css";
 
 export default function EisenhowerMatrix() {
   const [tasks, setTasks] = useState([]);

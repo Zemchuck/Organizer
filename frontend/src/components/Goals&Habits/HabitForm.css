@@ -1,5 +1,6 @@
-/* Reużyj dokładnie ten sam layout i wygląd co formularz zadań */
-@import './SingleTaskForm.css';
+@import '../Projects/SingleTaskForm.css';
+@import '../../styles/variables.css';
+@import '../../styles/utilities.css';
 
 /* ✅ Poprawne wyświetlanie koloru w pickerze (WebKit/Firefox) */
 .single-task-form input[type="color"] {

@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
-import SingleTaskForm from "./forms/SingleTaskForm.jsx";
+import SingleTaskForm from "./SingleTaskForm.jsx";
 import "./ProjectsView.css";
 
 const API = import.meta.env.VITE_API_URL || "";

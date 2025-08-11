@@ -4,7 +4,7 @@ import WeekView from "./WeekView.jsx";
 import TaskPopover from "./TaskPopover.jsx";
 import MonthView from "./MonthView.jsx";
 import "./Calendar.css";
-import { toLocalISO, mondayOf } from "../helpers/date.js";
+import { toLocalISO, mondayOf } from "../../helpers/date.js";
 
 const API = import.meta.env.VITE_API_URL || "";
 
