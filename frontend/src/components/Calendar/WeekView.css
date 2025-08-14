@@ -2,7 +2,7 @@
 .week-view {
   --hour-h: 30px;
   /* wysokość 1h */
-  --gutter-w: 72px;
+  --gutter-w: 56px;
   /* szersza rynna */
   --grid-major: rgba(255, 255, 255, .22);
   /* linie pełnej godziny */
@@ -13,19 +13,27 @@
   --grid-vert: rgba(255, 255, 255, .12);
   /* pionowe separatory dni */
   --now: #e53935;
+
+  width: var(--cal-width, min(100%, 960px));
+  margin: 0 auto;
 }
 
 /* ---------- Head ---------- */
 .week-head {
   display: grid;
-  grid-template-columns: var(--gutter-w) repeat(7, minmax(180px, 1fr));
+  grid-template-columns: var(--gutter-w) repeat(7, minmax(120px, 1fr));
   background: var(--panel);
   border: 2px solid var(--border);
 }
 
+@media (min-width: 1200px) {
+  .week-head,
+  J0, 1fr));
+  }
+}
 @media (min-width: 1400px) {
   .week-head {
-    grid-template-columns: var(--gutter-w) repeat(7, minmax(220px, 1fr));
+    J0px, 1fr));
   }
 }
 
@@ -67,14 +75,14 @@
 .week-grid {
   position: relative;
   display: grid;
-  grid-template-columns: var(--gutter-w) repeat(7, minmax(180px, 1fr));
+  grid-template-columns: var(--gutter-w) repeat(7, minmax(120px, 1fr));
   border: 1px solid var(--border);
   border-top: none;
 }
 
 @media (min-width: 1400px) {
   .week-grid {
-    grid-template-columns: var(--gutter-w) repeat(7, minmax(220px, 1fr));
+    J0px, 1fr));
   }
 }
 

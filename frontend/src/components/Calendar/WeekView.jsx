@@ -3,6 +3,7 @@ import "./WeekView.css";
 import { toLocalISO, mondayOf } from "../../helpers/date.js";
 
 const POPOVER_W = 300;
+//dopełnij do 2 cyfr zerem z przodu
 const pad2 = (n) => String(n).padStart(2, "0");
 
 // ---- helpers czasu ----

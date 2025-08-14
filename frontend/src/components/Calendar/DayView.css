@@ -1,193 +1,142 @@
 @import '../../styles/variables.css';
 @import '../../styles/utilities.css';
 
-/* ===== USTAWIENIA SIATKI ===== */
+/* ===== DayView – spójny wygląd z WeekView ===== */
 .day-view {
   --hour-h: 30px;
-  /* wysokość 1 godziny */
+  --gutter-w: 56px;
+  --grid-major: rgba(255, 255, 255, .22);
+  --grid-major-w: 2px;
+  --grid-minor: rgba(255, 255, 255, .09);
+  --grid-minor-w: 1px;
+  --grid-vert: rgba(255, 255, 255, .12);
+  --now: #e53935;
+
   background: var(--bg);
+  width: var(--cal-width, min(100%, 960px));
+  margin: 0 auto;
 }
 
-/* nagłówek dnia */
+/* Nagłówek dnia jak w WeekView */
 .day-head {
-  text-align: center;
+  display: grid;
+  place-items: center;
+  background: var(--panel);
   color: var(--white);
   font-weight: 800;
   letter-spacing: .2px;
-  padding-bottom: .35rem;
+  padding: .5rem .8rem;
+  border: 2px solid var(--border);
+  border-radius: 12px;
+  box-shadow: var(--shadow);
   font-family: "Oxanium", Inter, system-ui, sans-serif;
+  margin-bottom: .6rem;
 }
 
-/* ===== SIATKA: skala godzin + kolumna dnia ===== */
+/* Siatka dnia: rynna godzin + kolumna z wydarzeniami */
 .day-grid {
   display: grid;
-  grid-template-columns: var(--gutter-w, 58px) 1fr;
+  grid-template-columns: var(--gutter-w) minmax(320px, 1fr);
+  background: var(--panel);
   border: 1px solid var(--border);
-  border-top: none;
-  box-sizing: border-box;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: var(--shadow);
 }
 
-/* lewa kolumna z godzinami (tło kresek = to samo co w kolumnie dnia) */
+/* Lewa kolumna z godzinami */
 .hours-col {
-  border-right: 1px solid var(--border);
-  box-sizing: border-box;
-  background:
-    repeating-linear-gradient(to bottom,
-      transparent,
-      transparent calc(var(--hour-h) - 1px),
-      var(--border) calc(var(--hour-h) - 1px),
-      var(--border) var(--hour-h));
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  padding-right: .4rem;
+  border-right: 1px solid var(--grid-vert);
+  background: rgba(0, 0, 0, .08);
 }
 
 .hour-cell {
   height: var(--hour-h);
-  line-height: var(--hour-h);
-  padding-right: .35rem;
-  text-align: right;
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-end;
   font-variant-numeric: tabular-nums;
-  color: rgba(255, 255, 255, .85);
+  opacity: .9;
+  padding-top: 2px;
 }
 
-/* kolumna dnia z liniami godzin */
+/* Prawa kolumna – siatka i eventy */
 .day-col {
   position: relative;
   min-height: calc(var(--hour-h) * 24);
-  border-right: 1px solid var(--border);
-  box-sizing: border-box;
-  background:
+  /* pionowe obramowanie dnia */
+  box-shadow: inset 1px 0 0 var(--grid-vert);
+  /* linie godzin i połówek */
+  background-image:
     repeating-linear-gradient(to bottom,
-      transparent,
-      transparent calc(var(--hour-h) - 1px),
-      var(--border) calc(var(--hour-h) - 1px),
-      var(--border) var(--hour-h));
-  overflow: hidden;
+      var(--grid-minor) 0,
+      var(--grid-minor) var(--grid-minor-w),
+      transparent var(--grid-minor-w),
+      transparent calc(var(--hour-h) / 2),
+      var(--grid-minor) calc(var(--hour-h) / 2),
+      var(--grid-minor) calc(var(--hour-h) / 2 + var(--grid-minor-w)),
+      transparent calc(var(--hour-h) / 2 + var(--grid-minor-w)),
+      transparent var(--hour-h));
 }
 
-.day-col:last-child {
-  border-right: none;
-}
-
+/* ukryte wypełniacze wysokości co godzinę */
 .hour-row {
   height: var(--hour-h);
+  pointer-events: none;
 }
 
-/* techniczne wiersze do nakładania bloków */
-
-/* ===== BLOKI WYDARZEŃ ===== */
+/* Bloki zdarzeń */
 .event-block {
   position: absolute;
+  box-sizing: border-box;
   border-radius: 10px;
-  color: var(--white);
-  padding: .35rem .6rem;
-  display: inline-flex;
-  align-items: center;
-  gap: .5rem;
-
-  /* ✅ gradient zawsze, kolor spod spodu przez zmienną */
+  padding: .35rem .45rem;
+  color: #fff;
+  font-weight: 700;
+  text-shadow: 0 1px 1px rgba(0, 0, 0, .35);
   background:
     linear-gradient(180deg, rgba(255, 255, 255, .12) 0%, rgba(0, 0, 0, .06) 100%),
     var(--ev-color, #c84a5b);
-
   box-shadow:
     0 4px 10px rgba(0, 0, 0, .35),
     inset 0 0 0 1px rgba(0, 0, 0, .15);
-
+  border: 1px solid rgba(0, 0, 0, .15);
   overflow: hidden;
   z-index: 2;
   isolation: isolate;
-  /* pseudo-elementy mieszają się tylko w obrębie kafelka */
 }
 
 .event-block .ev-time {
-  font-weight: 800;
-  font-variant-numeric: tabular-nums;
-  text-shadow: 0 1px 0 rgba(0, 0, 0, .25);
+  font-size: .8rem;
+  opacity: .9;
+  margin-right: .4rem;
 }
 
 .event-block .ev-title {
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  font-size: .92rem;
 }
 
-/* ===== NAWYK: przekątne zawsze widoczne (jasne + ciemne) ===== */
-/* działa i po klasie, i po atrybucie data-kind="habit" */
-.event-block.habit {
-  background:
-    /* skosy jasne (na ciemnych kolorach) */
-    repeating-linear-gradient(45deg, rgba(255, 255, 255, .28) 0 2px, transparent 2px 8px),
-    repeating-linear-gradient(-45deg, rgba(255, 255, 255, .28) 0 2px, transparent 2px 8px),
-    /* skosy ciemne (na bardzo jasnych kolorach) */
-    repeating-linear-gradient(45deg, rgba(0, 0, 0, .22) 0 1px, transparent 1px 8px),
-    repeating-linear-gradient(-45deg, rgba(0, 0, 0, .22) 0 1px, transparent 1px 8px),
-    /* nasz „połysk” + kolor z pickera pod spodem */
-    linear-gradient(180deg, rgba(255, 255, 255, .12) 0%, rgba(0, 0, 0, .06) 100%),
-    var(--ev-color, #c84a5b) !important;
-  /* !important żeby wygrać z ogólnym .event-block */
-}
-/* ===== POPOVER (spójny z WeekView) ===== */
-.event-popover {
-  width: 280px;
-  max-width: 92vw;
-  background: var(--panel);
-  color: var(--white);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  box-shadow: 0 10px 24px rgba(0, 0, 0, .45);
-  padding: .6rem .7rem;
-  z-index: 9999;
-}
-
-.event-popover.right::before {
-  content: "";
-  position: absolute;
-  left: -8px;
-  top: 50%;
-  transform: translateY(-50%);
-  border-width: 8px;
-  border-style: solid;
-  border-color: transparent var(--panel) transparent transparent;
-  filter: drop-shadow(-1px 0 0 var(--border));
-}
-
-.event-popover .ep-title {
-  font-weight: 800;
-  margin-bottom: .25rem;
-}
-
-.event-popover .ep-desc {
-  opacity: .9;
-  font-size: .9rem;
-  line-height: 1.35;
-  margin-bottom: .5rem;
-}
-
-.ep-actions {
+/* Popover info (wspólne z WeekView) */
+.popover-meta {
   display: flex;
-  gap: .4rem;
   flex-wrap: wrap;
+  gap: .35rem .6rem;
+  font-size: .8rem;
+  opacity: .85;
+  margin-bottom: .6rem;
 }
 
-.pop-btn {
-  border: 1px solid rgba(255, 255, 255, .22);
-  background: transparent;
-  color: var(--white);
-  border-radius: 8px;
-  padding: .35rem .6rem;
-  cursor: pointer;
-  transition: background .15s, border-color .15s, transform .05s;
-}
-
-.pop-btn:hover {
-  background: rgba(255, 255, 255, .08);
-  border-color: rgba(255, 255, 255, .32);
-}
-
-.pop-btn.danger {
-  border-color: rgba(255, 99, 71, .45);
-  color: #ffb3ad;
-}
-
-.pop-btn.danger:hover {
-  background: rgba(255, 99, 71, .12);
+/* Czerwona linia bieżącego czasu (jeśli używana) */
+.now-line {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--now);
+  box-shadow: 0 0 0 1px var(--now);
+  z-index: 3;
 }
