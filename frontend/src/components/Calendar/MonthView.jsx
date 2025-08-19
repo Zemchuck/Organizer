@@ -1,6 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
 import "./MonthView.css";
-import MonthTable from "./MonthTable.jsx";
 
 const API = import.meta.env.VITE_API_URL || "";
 
@@ -9,7 +8,6 @@ const firstOfMonth = (d) => new Date(d.getFullYear(), d.getMonth(), 1);
 const lastOfMonth = (d) => new Date(d.getFullYear(), d.getMonth() + 1, 0);
 const startOfWeek = (d) => { const nd = new Date(d); const w = (nd.getDay() + 6) % 7; nd.setDate(nd.getDate() - w); nd.setHours(0, 0, 0, 0); return nd; };
 const endOfWeek = (d) => { const s = startOfWeek(d); const e = new Date(s); e.setDate(s.getDate() + 6); e.setHours(23, 59, 59, 999); return e; };
-const sliceDate = (iso) => (iso ? String(iso).slice(0, 10) : "");
 
 export default function MonthView({ initialDate, onAdd }) {
   const [anchor] = useState(() => initialDate ? new Date(initialDate) : new Date());
@@ -17,8 +15,8 @@ export default function MonthView({ initialDate, onAdd }) {
   const [habits, setHabits] = useState([]);
   const [showHabits, setShowHabits] = useState(true);
   const [selected, setSelected] = useState(null);
-  const [layout, setLayout] = useState("grid");
 
+  // zakres siatki (pełne tygodnie)
   const grid = useMemo(() => {
     const first = firstOfMonth(anchor);
     const last = lastOfMonth(anchor);
@@ -30,6 +28,7 @@ export default function MonthView({ initialDate, onAdd }) {
     return { start, end, days };
   }, [anchor]);
 
+  // dane
   useEffect(() => {
     (async () => {
       const r = await fetch(`${API}/tasks?start_date=${fmt(grid.start)}&end_date=${fmt(grid.end)}`);
@@ -44,11 +43,12 @@ export default function MonthView({ initialDate, onAdd }) {
     })().catch(console.error);
   }, []);
 
+  // mapowanie pozycji do dni
   const itemsByDay = useMemo(() => {
     const m = {};
     for (const t of tasks) {
       if (!t?.time) continue;
-      const key = sliceDate(t.time);
+      const key = String(t.time).slice(0, 10);
       (m[key] ||= []).push({ id: `task-${t.id}`, type: "task", title: t.title, color: t.color || "#7aa7ff" });
     }
     if (showHabits) {
@@ -72,6 +72,7 @@ export default function MonthView({ initialDate, onAdd }) {
 
   return (
     <div className="month-shell">
+      {/* actions w stylu WeekView, szerokość = var(--cal-width) */}
       <div className="month-toolbar">
         <div />
         <div className="right-actions">
@@ -81,51 +82,51 @@ export default function MonthView({ initialDate, onAdd }) {
         </div>
       </div>
 
-      <div className="mode-switch">
-        <button className={`pill ${layout === "grid" ? "active" : ""}`} onClick={() => setLayout("grid")}>Siatka</button>
-        <button className={`pill ${layout === "table" ? "active" : ""}`} onClick={() => setLayout("table")}>Tabela</button>
-      </div>
+      {/* karta siatki miesiąca — bez widoku tabeli */}
+      <div className="month-grid-card">
+        <div className="month-grid-head">
+          {["Pn", "Wt", "Śr", "Cz", "Pt", "Sb", "Nd"].map((d) => (
+            <div key={d} className="head-cell">{d}</div>
+          ))}
+        </div>
 
-      {layout === "table" ? (
-        <MonthTable monthAnchor={anchor} />
-      ) : (
-        <>
-          <div className="month-grid-head">
-            {["Pn", "Wt", "Śr", "Cz", "Pt", "Sb", "Nd"].map((d) => <div key={d} className="head-cell">{d}</div>)}
-          </div>
-          <div className="month-grid-body">
-            {grid.days.map((d) => {
-              const key = fmt(d);
-              const items = (itemsByDay[key] || []).slice(0, 6);
-              const sel = selected === key;
-              const other = d.getMonth() !== anchor.getMonth();
-              return (
-                <div
-                  key={key}
-                  className={`day-cell ${other ? "muted" : ""} ${sel ? "selected" : ""}`}
-                  onClick={() => setSelected(key)}
-                  onDoubleClick={() => onAdd?.(key)}
-                >
-                  <div className="day-top">
-                    <span className="num">{d.getDate()}</span>
-                    <button className="mini-add" title="Dodaj" onClick={(e) => { e.stopPropagation(); onAdd?.(key); }}>+</button>
-                  </div>
-                  <div className="mini-items">
-                    {items.map((it) => (
-                      <div
-                        key={it.id}
-                        className={`mini-block ${it.type}`}
-                        title={it.title}
-                        style={{ background: it.color }}
-                      />
-                    ))}
-                  </div>
+        <div className="month-grid-body">
+          {grid.days.map((d) => {
+            const key = fmt(d);
+            const items = (itemsByDay[key] || []).slice(0, 6);
+            const sel = selected === key;
+            const other = d.getMonth() !== anchor.getMonth();
+            return (
+              <div
+                key={key}
+                className={`day-cell ${other ? "muted" : ""} ${sel ? "selected" : ""}`}
+                onClick={() => setSelected(key)}
+                onDoubleClick={() => onAdd?.(key)}
+              >
+                <div className="day-top">
+                  <span className="num">{d.getDate()}</span>
+                  <button
+                    className="mini-add"
+                    title="Dodaj"
+                    onClick={(e) => { e.stopPropagation(); onAdd?.(key); }}
+                  >+</button>
                 </div>
-              );
-            })}
-          </div>
-        </>
-      )}
+
+                <div className="mini-items">
+                  {items.map((it) => (
+                    <div
+                      key={it.id}
+                      className={`mini-block ${it.type}`}
+                      title={it.title}
+                      style={{ background: it.color }}
+                    />
+                  ))}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
     </div>
   );
 }

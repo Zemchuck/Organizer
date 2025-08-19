@@ -84,11 +84,16 @@ input, select, textarea {
 
 /* podpisy godzin */
 .hour-label {
-  font-size: var(--fs-sm);
+  font-size: var(--hour-label-size, var(--fs-sm));
   font-variant-numeric: tabular-nums;
   opacity: .92;
-}
 
+  /* drobne „bezpieczniki”, żeby nic się nie rozjechało */
+  line-height: 1;
+  /* brak dodatkowych odstępów pionowych */
+  white-space: nowrap;
+  /* godzina nie złamie się do dwóch linii */
+}
 /* event title */
 .event-title {
   font-size: var(--fs-sm);

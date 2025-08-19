@@ -1,51 +1,74 @@
 // src/App.jsx
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { BrowserRouter as Router, Routes, Route, NavLink, Navigate } from "react-router-dom";
 
 import Calendar from "./components/Calendar/Calendar.jsx";
 import ProjectsView from "./components/Projects/ProjectsView.jsx";
 import StatsHabits from "./components/Goals&Habits/StatsHabits.jsx";
-import TaskList from "./pages/TaskList.jsx";
-import PomodoroTimer from "./components/Projects/PomodoroTimer.jsx";
-import ThemeToggle from "./components/ThemeToggle.jsx";
+
+/** Mini-selektor motywu – pokazujemy TYLKO ciemny (jasny ukryty) */
+function ThemeSelect() {
+  const [theme, setTheme] = useState(() => localStorage.getItem("theme") || "dark");
+
+  useEffect(() => {
+    document.documentElement.setAttribute("data-theme", theme);
+    localStorage.setItem("theme", theme);
+  }, [theme]);
+
+  return (
+    <div className="theme-toggle" style={{ display: "flex", gap: ".4rem", alignItems: "center" }}>
+      <span style={{ opacity: .8 }}>Motyw</span>
+      <select
+        aria-label="Wybierz motyw"
+        value={theme}
+        onChange={(e) => setTheme(e.target.value)}
+      >
+        {/* tylko ciemny; jasny schowany */}
+        <option value="dark">Ciemny</option>
+        <option value="light" hidden>Jasny</option>
+      </select>
+    </div>
+  );
+}
 
 export default function App() {
+  // Ustaw domyślnie CIEMNY przy pierwszym uruchomieniu
+  useEffect(() => {
+    const saved = localStorage.getItem("theme");
+    if (!saved) {
+      document.documentElement.setAttribute("data-theme", "dark");
+      localStorage.setItem("theme", "dark");
+    }
+  }, []);
+
   return (
     <Router>
       <div className="app-shell">
         <header className="app-header" style={headerStyle}>
-          <div className="brand" style={brandStyle}>
-            <span role="img" aria-label="logo" style={{ marginRight: 8 }}>🗂️</span>
-            <strong>Organizer</strong>
+          <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
+            <span style={{ fontWeight: 800, display: "flex", alignItems: "center", gap: ".5rem" }}>
+              <span role="img" aria-label="folder">📁</span> Organizer
+            </span>
+
+            <nav style={navStyle}>
+              <NavLink to="/calendar" className="nav-link">Kalendarz</NavLink>
+              <NavLink to="/projects" className="nav-link">Projekty</NavLink>
+              <NavLink to="/goals" className="nav-link">Cele i Nawyki</NavLink>
+              {/* "Lista zadań" i "Pomodoro" ukryte */}
+            </nav>
           </div>
 
-          <nav className="app-nav" style={navStyle}>
-            <NavItem to="/calendar">Kalendarz</NavItem>
-            <NavItem to="/projects">Projekty</NavItem>
-            <NavItem to="/goals">Cele i Nawyki</NavItem>
-            <NavItem to="/tasks">Lista zadań</NavItem>
-            <NavItem to="/pomodoro">Pomodoro</NavItem>
-          </nav>
-
-          <ThemeToggle />
+          {/* selektor motywu – tylko ciemny */}
+          <ThemeSelect />
         </header>
 
-        <main className="app-content" style={contentStyle}>
+        <main style={contentStyle}>
           <Routes>
             <Route path="/" element={<Navigate to="/calendar" replace />} />
             <Route path="/calendar" element={<Calendar />} />
-
-            {/* Projekty (taski tylko w ramach projektów) */}
             <Route path="/projects" element={<ProjectsView />} />
-
-            {/* Cele i Nawyki */}
             <Route path="/goals" element={<StatsHabits />} />
-
-            {/* Dodatkowe widoki */}
-            <Route path="/tasks" element={<TaskList />} />
-            <Route path="/pomodoro" element={<PomodoroTimer />} />
-
-            {/* 404 → do kalendarza */}
+            {/* trasy /tasks i /pomodoro usunięte */}
             <Route path="*" element={<Navigate to="/calendar" replace />} />
           </Routes>
         </main>
@@ -54,46 +77,19 @@ export default function App() {
   );
 }
 
-/* ---------- mała pomocnicza kapsułka do NavLink ---------- */
-function NavItem({ to, children }) {
-  return (
-    <NavLink
-      to={to}
-      className={({ isActive }) => "nav-link" + (isActive ? " active" : "")}
-      style={({ isActive }) => ({
-        padding: "0.45rem 0.7rem",
-        borderRadius: 8,
-        textDecoration: "none",
-        color: "var(--white)",
-        border: "1px solid transparent",
-        background: isActive ? "rgba(255,255,255,.10)" : "transparent",
-      })}
-    >
-      {children}
-    </NavLink>
-  );
-}
-
-/* ---------- proste inline style (działa bez nowych plików CSS) ---------- */
 const headerStyle = {
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "space-between",
-  gap: "1rem",
-  padding: ".6rem .9rem",
-  background: "var(--panel)",
-  borderBottom: "1px solid var(--border)",
-  boxShadow: "var(--shadow)",
   position: "sticky",
   top: 0,
   zIndex: 10,
-};
-
-const brandStyle = {
+  background: "var(--panel)",
+  borderBottom: "1px solid var(--border)",
+  padding: ".6rem 1rem",
   display: "flex",
   alignItems: "center",
-  color: "var(--turquoise)",
-  fontFamily: "Oxanium, sans-serif",
+  justifyContent: "space-between",
+  boxShadow: "var(--shadow)",
+  borderRadius: "0 0 14px 14px",
+  fontFamily: '"Oxanium", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif',
   fontWeight: 700,
 };
 

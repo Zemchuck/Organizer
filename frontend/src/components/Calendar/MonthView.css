@@ -1,12 +1,15 @@
 @import '../../styles/variables.css';
 @import '../../styles/utilities.css';
 
+/* kontener dopasowany szerokością do toolbara (var(--cal-width)) */
 .month-shell {
   display: grid;
   gap: .6rem;
+  width: var(--cal-width, min(100%, 960px));
+  margin: 0 auto;
 }
 
-/* toolbar / pills — bez zmian z poprzedniej wersji */
+/* prosty pasek akcji (stylistycznie jak w WeekView) */
 .month-toolbar {
   display: grid;
   grid-template-columns: 1fr auto;
@@ -27,32 +30,25 @@
   color: var(--white);
 }
 
-.mode-switch {
-  display: inline-flex;
-  gap: .35rem;
+.btn.ghost:hover {
+  background: rgba(255, 255, 255, .06);
+  border-color: var(--border-strong);
 }
 
-.mode-switch .pill {
-  height: 30px;
-  padding: 0 .8rem;
-  border-radius: 999px;
+/* KARTA z siatką miesiąca (jak panel WeekView) */
+.month-grid-card {
+  background: var(--panel);
   border: 1px solid var(--border);
-  background: transparent;
-  color: var(--white);
+  border-radius: 12px;
+  box-shadow: var(--shadow);
+  overflow: hidden;
 }
 
-.mode-switch .pill.active {
-  background: linear-gradient(135deg, var(--purple), var(--turquoise));
-  color: var(--graphite);
-  border-color: transparent;
-}
-
-/* head / body siatki – bez zmian */
+/* nagłówek dni tygodnia */
 .month-grid-head {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
-  border: 1px solid var(--border);
-  border-bottom: none;
+  border-bottom: 1px solid var(--border);
 }
 
 .head-cell {
@@ -67,15 +63,14 @@
   border-right: none;
 }
 
+/* ciało siatki */
 .month-grid-body {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
-  border: 1px solid var(--border);
-  border-top: none;
 }
 
 .day-cell {
-  min-height: 100px;
+  min-height: 110px;
   border-right: 1px solid var(--border);
   border-top: 1px solid var(--border);
   padding: .45rem .5rem;
@@ -100,6 +95,7 @@
   border-radius: 6px;
 }
 
+/* góra komórki */
 .day-top {
   display: flex;
   align-items: center;
@@ -124,7 +120,7 @@
   border-color: var(--border-strong);
 }
 
-/* ✅ mini-bloczki zamiast kropek */
+/* mini-bloczki (task/habit) */
 .mini-items {
   margin-top: .45rem;
   display: grid;
@@ -140,7 +136,6 @@
   box-shadow: 0 0 0 1px rgba(0, 0, 0, .12) inset;
 }
 
-/* ❌ przekątne dla nawyków */
 .mini-block.habit {
   position: relative;
 }

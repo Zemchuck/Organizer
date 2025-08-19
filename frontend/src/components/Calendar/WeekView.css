@@ -26,16 +26,6 @@
   border: 2px solid var(--border);
 }
 
-@media (min-width: 1200px) {
-  .week-head,
-  J0, 1fr));
-  }
-}
-@media (min-width: 1400px) {
-  .week-head {
-    J0px, 1fr));
-  }
-}
 
 .head-cell {
   display: grid;
@@ -49,10 +39,8 @@
   border-right: none;
 }
 
-.head-cell.gutter {
-  visibility: hidden;
-  border-right: none;
-}
+
+
 
 .head-cell .wd {
   font-family: "Oxanium", sans-serif;
@@ -75,16 +63,15 @@
 .week-grid {
   position: relative;
   display: grid;
+  margin-top: var(--week-gap, 10px);
   grid-template-columns: var(--gutter-w) repeat(7, minmax(120px, 1fr));
   border: 1px solid var(--border);
-  border-top: none;
+  border-left: none;
+  border-top-color: var(--grid-major);
+  border-top-width: var(--grid-major-w);
+  border-bottom: none;
 }
 
-@media (min-width: 1400px) {
-  .week-grid {
-    J0px, 1fr));
-  }
-}
 
 /* lewa kolumna z godzinami: same linie + overlay z etykietami */
 .hours-col {
@@ -112,17 +99,26 @@
 
 .hour-label-el {
   position: absolute;
-  left: 6px;
+  left: 0px;
   transform: translateY(-50%);
+
   /* środek etykiety na linii */
 }
 
 .hour-label {
   display: inline-block;
-  font-size: .78rem;
+  font-size: 2rem;
   font-variant-numeric: tabular-nums;
   color: var(--gray);
   opacity: .9;
+
+  /* >>> to „maskuje” linię pod napisem: */
+  background: var(--panel);
+  /* ten sam kolor co tło panelu */
+  padding: 0 .35rem;
+  /* odrobina luzu po bokach */
+  border-radius: 5px;
+  /* miękkie rogi, żeby ładnie wyglądało */
 }
 
 /* kolumny dni */

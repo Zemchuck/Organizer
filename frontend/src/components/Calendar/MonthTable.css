@@ -48,18 +48,21 @@
   padding: .2rem .45rem;
   border-radius: 7px;
   border: 1px solid var(--border);
-  background: rgba(255,255,255,.04);
+  background: rgba(255, 255, 255, .04);
   max-width: 100%;
 }
+
 .row-item .dot {
   width: 8px;
   height: 8px;
   border-radius: 50%;
 }
+
 .row-item .time {
   font-variant-numeric: tabular-nums;
   opacity: .85;
 }
+
 .row-item .title {
   overflow: hidden;
   text-overflow: ellipsis;

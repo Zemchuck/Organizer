@@ -148,18 +148,6 @@ a:hover { text-decoration: underline; }
 }
 
 /* Theme toggle lekki styling */
-.theme-toggle select {
-  height: 34px;
-  border-radius: 8px;
-  background: transparent;
-  color: var(--white);
-  border: 1px solid var(--border);
-  padding: 0 .7rem;
-}
-.theme-toggle select:hover {
-  background: rgba(255,255,255,.06);
-  border-color: var(--border-strong);
-}
 
 /* Wspólne helpery */
 .hint {
@@ -173,4 +161,41 @@ a:hover { text-decoration: underline; }
   border: 1px solid rgba(255, 99, 71, .35);
   border-radius: 8px;
   padding: .5rem .7rem;
+}
+
+/* Force DARK THEME (light theme usunięty) */
+:root,
+:root[data-theme="dark"],
+:root[data-theme="light"] {
+  color-scheme: dark;
+  /* core tokens used w komponentach */
+  --bg: #0f1318;
+  --panel: #161b22;
+  --panel-elev: #1c222b;
+  --border: rgba(255,255,255,.14);
+  --border-strong: rgba(255,255,255,.28);
+  --white: #e6f1ff;
+  --muted: rgba(255,255,255,.6);
+  --shadow: 0 4px 16px rgba(0, 0, 0, .35);
+  --accent: #2dd4bf;
+}
+
+/* === Theme toggle (UI) === */
+.theme-toggle select {
+  height: 34px;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--white);
+  border: 1px solid var(--border);
+  padding: 0 .6rem;
+}
+
+.theme-toggle select:hover {
+  background: rgba(255, 255, 255, .06);
+  border-color: var(--border-strong);
+}
+
+/* ukryj opcję jasnego motywu w select */
+.theme-toggle option[value="light"] {
+  display: none;
 }

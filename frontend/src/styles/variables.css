@@ -1,46 +1,56 @@
-/* Base tokens — LIGHT as default */
+/* ===== Design Tokens =====
+   Domyślny motyw: DARK
+   Dodatkowy motyw: NEON (przełączany przez [data-theme="neon"])
+*/
+
+/* --- DARK (default) --- */
 :root {
   /* surfaces */
-  --bg: #f6f7fb;
-  --panel: #ffffff;
-  --graphite: #16181d;
-
-  /* text */
-  --text: #0f1222;
-  --text-muted: #373a46;
-  --gray: #6b7185; /* NEW: used by hour labels, hints, etc. */
-
-  /* accents */
-  --turquoise: #39e0cf;
-  --purple: #b37dff;
-  --white: #ffffff;
-
-  /* borders/shadows */
-  --border: rgba(15, 18, 34, .12);
-  --border-strong: rgba(15, 18, 34, .18);
-  --shadow: 0 4px 14px rgba(0,0,0,.08);
-}
-
-/* DARK */
-:root[data-theme="dark"] {
   --bg: #0d0f14;
   --panel: #151922;
   --graphite: #0d0f14;
 
-  --text: rgba(255,255,255,.92);
-  --text-muted: rgba(255,255,255,.75);
-  --gray: rgba(255,255,255,.65); /* NEW */
+  /* text */
+  --text: rgba(255, 255, 255, .92);
+  --text-muted: rgba(255, 255, 255, .75);
+  --gray: rgba(255, 255, 255, .65);
 
+  /* accents */
   --turquoise: #40e0d0;
   --purple: #b37dff;
   --white: #ffffff;
 
-  --border: rgba(255,255,255,.12);
-  --border-strong: rgba(255,255,255,.18);
-  --shadow: 0 4px 14px rgba(0,0,0,.6);
+  /* borders/shadows */
+  --border: rgba(255, 255, 255, .12);
+  --border-strong: rgba(255, 255, 255, .18);
+  --shadow: 0 4px 14px rgba(0, 0, 0, .6);
+
+  /* layout – calendar */
+  --cal-width: min(100%, 960px);
+  /* wspólna szerokość headera i grida */
+  --field-height: 30px;
+  /* wysokość 1h (WeekView) */
+  --hours-col-w: 56px;
+  /* lewa kolumna godzin (Week/Day) */
+  --gutter-w: var(--hours-col-w);
+  --hour-h: var(--field-height);
+
+  /* grid lines */
+  --grid-major: rgba(255, 255, 255, .15);
+  --grid-major-w: 2px;
+  --grid-minor: rgba(255, 255, 255, .08);
+  --grid-minor-w: 1px;
+  --grid-vert: rgba(255, 255, 255, .12);
+
+  /* now line */
+  --now: #ff4d4f;
 }
 
-/* NEON (przykładowy trzeci motyw) */
+/* Opcjonalny alias – jeśli app gdzieś wymusza [data-theme="dark"],
+   wartości będą identyczne jak domyślne. */
+:root[data-theme="dark"] {}
+
+/* --- NEON --- */
 :root[data-theme="neon"] {
   --bg: #04040a;
   --panel: #0b0c16;
@@ -48,19 +58,37 @@
 
   --text: #e2f2ff;
   --text-muted: #a6b3c7;
-  --gray: #9aa6bf; /* NEW */
+  --gray: #9aa6bf;
 
   --turquoise: #00ffd1;
   --purple: #9c5bff;
   --white: #ffffff;
 
-  --border: rgba(0,255,209,.18);
-  --border-strong: rgba(156,91,255,.28);
-  --shadow: 0 6px 18px rgba(0,255,209,.12);
+  --border: rgba(0, 255, 209, .18);
+  --border-strong: rgba(156, 91, 255, .28);
+  --shadow: 0 6px 18px rgba(0, 255, 209, .12);
+
+  /* layout – calendar */
+  --cal-width: min(100%, 960px);
+  --field-height: 30px;
+  --hours-col-w: 56px;
+  --gutter-w: var(--hours-col-w);
+  --hour-h: var(--field-height);
+
+  /* grid lines – neon vibe */
+  --grid-major: rgba(0, 255, 209, .18);
+  --grid-major-w: 2px;
+  --grid-minor: rgba(0, 255, 209, .12);
+  --grid-minor-w: 1px;
+  --grid-vert: rgba(156, 91, 255, .18);
+
+  --now: #ff3b6b;
 }
 
-/* Global usage */
-html, body, #root {
+/* --- Global usage --- */
+html,
+body,
+#root {
   background: var(--bg);
   color: var(--text);
 }
