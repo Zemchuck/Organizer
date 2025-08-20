@@ -1,27 +1,24 @@
 import React, { useEffect, useState } from "react";
 import "./TaskForm.css";
 
-
-const API = import.meta.env.VITE_API_URL || "";
+const API = import.meta.env.VITE_API_URL || "/api";
 const DOW = ["Pn", "Wt", "Śr", "Cz", "Pt", "So", "Nd"];
 const today = () => new Date().toISOString().slice(0, 10);
 
 async function postJSON(url, payload) {
   const res = await fetch(url, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: { "Content-Type": "application/json", Accept: "application/json" },
     body: JSON.stringify(payload),
   });
   const ct = res.headers.get("content-type") || "";
   const text = await res.text();
-  let data = null;
-  try { data = ct.includes("application/json") ? JSON.parse(text) : text; } catch {}
   if (!res.ok) {
-    // wyrzuć treść błędu 422 (z FastAPI zwykle w polu "detail")
-    const detail = data && data.detail ? JSON.stringify(data.detail) : text;
-    throw new Error(`HTTP ${res.status}: ${detail}`);
+    const msg = text.slice(0, 180) || `HTTP ${res.status}`;
+    throw new Error(msg);
   }
-  return data;
+  if (!ct.includes("application/json")) throw new Error(`API zwróciło ${ct}`);
+  return JSON.parse(text || "null");
 }
 
 export default function TaskForm({ initialDate, onCreated, onCancel }) {
@@ -30,9 +27,9 @@ export default function TaskForm({ initialDate, onCreated, onCancel }) {
   const [errFetch, setErrFetch] = useState("");
 
   const [state, setState] = useState({
-    project_id: "",                            // opcjonalnie
+    project_id: "",
     title: "",
-    date: initialDate || today(),              // ⬅️ domyślnie dziś
+    date: initialDate || today(),
     time: "09:00",
     duration: 60,
     color: "#59c1ff",
@@ -46,8 +43,10 @@ export default function TaskForm({ initialDate, onCreated, onCancel }) {
   useEffect(() => {
     (async () => {
       try {
-        const r = await fetch(`${API}/projects`);
-        const data = await r.json();
+        const r = await fetch(`${API}/projects`, { headers: { Accept: "application/json" } });
+        const ct = r.headers.get("content-type") || "";
+        const text = await r.text();
+        const data = ct.includes("application/json") ? JSON.parse(text || "null") : null;
         setProjects(Array.isArray(data) ? data : []);
       } catch (e) {
         console.error(e);
@@ -67,7 +66,6 @@ export default function TaskForm({ initialDate, onCreated, onCancel }) {
   };
 
   function buildPayload() {
-    // wymagane wg bazy: title, date, time, duration
     const title = state.title.trim();
     const date = state.date;
     let time = state.time;
@@ -77,21 +75,17 @@ export default function TaskForm({ initialDate, onCreated, onCancel }) {
     if (!date) throw new Error("Wybierz datę.");
     if (!time) throw new Error("Wybierz godzinę.");
     if (!Number.isFinite(duration) || duration < 1 || duration > 1440)
-      throw new Error("Czas trwania musi być w zakresie 1–1440 min.");
+      throw new Error("Czas trwania musi być 1–1440 min.");
 
-    // dtime parsuje "HH:MM", ale czasem ładniej podać pełny format
     if (/^\d{2}:\d{2}$/.test(time)) time = `${time}:00`;
 
-    const payload = { title, date, time, duration, task_type: "single" }; // ⬅️ jawnie single
-
+    const payload = { title, date, time, duration, task_type: "single" };
     if (state.color) payload.color = state.color;
     if (state.project_id) payload.project_id = Number(state.project_id);
-
     if (state.repeat_days.length) {
       payload.repeat_days = state.repeat_days;
       if (state.repeat_until) payload.repeat_until = state.repeat_until;
     }
-
     return payload;
   }
 
@@ -101,17 +95,12 @@ export default function TaskForm({ initialDate, onCreated, onCancel }) {
     try {
       const payload = buildPayload();
       setSaving(true);
-      const created = await postJSON(`/tasks`, payload); // proxy lub VITE_API_URL
+      const created = await postJSON(`${API}/tasks`, payload);
       onCreated?.(created);
       onCancel?.();
     } catch (e) {
       console.error(e);
-      // Pokaż szczegóły walidacji z FastAPI, żeby szybko namierzyć pole
-      setError(
-        e.message.includes("422")
-          ? `Błędne dane (422): ${e.message.replace(/^HTTP 422:\s*/, "")}`
-          : "Nie udało się dodać zadania."
-      );
+      setError(String(e.message || "Nie udało się dodać zadania."));
     } finally {
       setSaving(false);
     }
@@ -125,7 +114,7 @@ export default function TaskForm({ initialDate, onCreated, onCancel }) {
 
       <div className="row two">
         <div className="form-group">
-          <label>Projekt <span style={{opacity:.7}}>(opcjonalnie)</span></label>
+          <label>Projekt <span style={{ opacity: .7 }}>(opcjonalnie)</span></label>
           <select
             value={state.project_id}
             onChange={(e) => setState({ ...state, project_id: e.target.value })}
@@ -226,7 +215,7 @@ export default function TaskForm({ initialDate, onCreated, onCancel }) {
       {error && <div className="form-error">{error}</div>}
 
       <div className="row-bottom">
-        <button type="button" className="submit-btn.ghost" onClick={onCancel} disabled={saving}>
+        <button type="button" className="submit-btn ghost" onClick={onCancel} disabled={saving}>
           Anuluj
         </button>
         <button className="submit-btn" disabled={saving}>

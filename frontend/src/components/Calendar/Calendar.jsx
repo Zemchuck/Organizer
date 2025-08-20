@@ -6,7 +6,8 @@ import MonthView from "./MonthView.jsx";
 import "./Calendar.css";
 import { toLocalISO, mondayOf } from "../../helpers/date.js";
 
-const API = import.meta.env.VITE_API_URL || "";
+/* Używamy prefixu /api (albo pełnego URL z .env) */
+const API = import.meta.env.VITE_API_URL || "/api";
 
 /* ===== helpers – lokalny YYYY-MM-DD i tydzień od poniedziałku ===== */
 const fmt = (d) => toLocalISO(d); // ⟵ lokalny, bez przesunięć UTC
@@ -18,6 +19,19 @@ const endOfWeek = (d) => {
   e.setHours(23, 59, 59, 999);
   return e;
 };
+
+/* Bezpieczne pobieranie JSON (chroni przed HTML/index.html) */
+async function getJSON(url) {
+  const res = await fetch(url, { headers: { Accept: "application/json" } });
+  const ct = res.headers.get("content-type") || "";
+  const text = await res.text();
+  if (!res.ok) throw new Error(`HTTP ${res.status}: ${text.slice(0, 180)}`);
+  if (!ct.includes("application/json")) {
+    console.error("Non-JSON response", { url: res.url, status: res.status, ct, preview: text.slice(0, 200) });
+    throw new Error(`Expected JSON, got: ${ct}`);
+  }
+  return JSON.parse(text || "null");
+}
 
 export default function Calendar() {
   const [view, setView] = useState("week");                // 'day' | 'week' | 'month'
@@ -51,11 +65,12 @@ export default function Calendar() {
     (async () => {
       setLoading(true);
       try {
-        const res = await fetch(`${API}/tasks?start_date=${range.start}&end_date=${range.end}`);
-        const data = await res.json();
+        const url = `${API}/tasks?start_date=${range.start}&end_date=${range.end}`;
+        const data = await getJSON(url);
         setTasks(Array.isArray(data) ? data : []);
       } catch (e) {
         console.error(e);
+        setTasks([]);
       } finally {
         setLoading(false);
       }
@@ -66,11 +81,11 @@ export default function Calendar() {
   useEffect(() => {
     (async () => {
       try {
-        const r = await fetch(`${API}/habits`);
-        const h = await r.json();
+        const h = await getJSON(`${API}/habits`);
         setHabits(Array.isArray(h) ? h : []);
       } catch (e) {
         console.error(e);
+        setHabits([]);
       }
     })();
   }, []);

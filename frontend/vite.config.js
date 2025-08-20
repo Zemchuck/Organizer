@@ -5,22 +5,12 @@ export default defineConfig({
   plugins: [react()],
   server: {
     proxy: {
-      '/tasks': {
+      // front: /api/... -> backend: http://localhost:8000/...
+      '/api': {
         target: 'http://localhost:8000',
         changeOrigin: true,
-      },
-      '/projects': {
-        target: 'http://localhost:8000',
-        changeOrigin: true,
-      },
-      '/habits': {
-        target: 'http://localhost:8000',
-        changeOrigin: true,
-      },
-      '/goals': {
-        target: 'http://localhost:8000',
-        changeOrigin: true,
-      },
+        rewrite: (path) => path.replace(/^\/api/, '')
+      }
     }
   }
 })

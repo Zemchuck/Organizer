@@ -1,9 +1,14 @@
 @import '../../styles/variables.css';
 @import '../../styles/utilities.css';
 
-.stats-habits { display: flex; flex-direction: column; gap: 1rem; }
+/* Layout */
+.stats-habits {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
 
-/* nagłówek panelu */
+/* Panel head */
 .panel-head {
   background: var(--panel);
   border: 1px solid var(--border);
@@ -15,116 +20,280 @@
   align-items: center;
   gap: .75rem;
 }
-.panel-head h2 { margin: 0; color: var(--turquoise); font-family: "Oxanium", sans-serif; }
-.panel-head .stats { display: flex; gap: 1rem; opacity: .9; }
-.panel-head .head-actions { display: flex; justify-content: flex-end; }
-.btn {
-  height: 34px; padding: 0 .7rem; border-radius: 8px;
-  border: 1px solid var(--border); background: transparent; color: var(--white);
-  cursor: pointer; transition: background .15s, border-color .15s, transform .05s;
-}
-.btn:hover { background: rgba(255,255,255,.06); border-color: var(--border-strong); }
-.btn:active { transform: scale(.98); }
-.btn.small { height: 30px; padding: 0 .55rem; font-size: .92rem; }
-.btn.danger { border-color: rgba(255, 99, 71, .45); }
-.btn.danger:hover { background: rgba(255, 99, 71, .15); }
 
-/* sekcje celów */
+.panel-title h2 {
+  margin: 0;
+  font-size: 1.15rem;
+}
+
+.panel-sub {
+  margin: .15rem 0 0;
+  opacity: .75;
+  font-size: .9rem;
+}
+
+.panel-head .stats {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  opacity: .9;
+}
+
+.panel-head .head-actions {
+  display: flex;
+  gap: .4rem;
+}
+
+/* Buttons helpers (fallback) */
+.btn {
+  border: 1px solid var(--border);
+  background: var(--surface, #202225);
+  padding: .35rem .6rem;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.btn.small {
+  font-size: .9rem;
+}
+
+.btn.danger {
+  border-color: rgba(255, 99, 71, .4);
+  color: #ff8a75;
+}
+
+.btn:disabled {
+  opacity: .6;
+  cursor: default;
+}
+
+/* Inline forms under headers */
+.inline-form {
+  padding: .7rem .9rem;
+  border: 1px dashed var(--border);
+  border-top: none;
+  border-radius: 0 0 12px 12px;
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  background: rgba(255, 255, 255, .02);
+}
+
+/* Goal cards grid */
 .goals-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-  gap: 1rem;
+  gap: .9rem;
+  overflow: visible;
+  /* pozwól popoverom wychodzić */
 }
+
 .goal-card {
-  background: var(--panel);
   border: 1px solid var(--border);
   border-radius: 12px;
+  background: var(--panel);
   box-shadow: var(--shadow);
-  /* WAŻNE: pozwól popoverowi wyjść poza kartę */
+  overflow: visible;
+  /* było: hidden – utnie popover */
+}
+
+.goal-card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: .6rem;
+  padding: .7rem .9rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.goal-card-head h3 {
+  margin: 0;
+  color: var(--turquoise, #6cf0e6);
+  font-family: "Oxanium", ui-sans-serif, system-ui;
+  font-size: 1.05rem;
+}
+
+/* Habit list */
+.habit-list {
+  list-style: none;
+  margin: 0;
+  padding: .6rem .9rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: .5rem;
   overflow: visible;
 }
-.goal-card-head {
-  display: flex; align-items: center; justify-content: space-between;
-  gap: .6rem; padding: .7rem .9rem; border-bottom: 1px solid var(--border);
+
+.habit-item {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  position: relative;
+  /* kotwica dla popovera */
 }
-.goal-card-head h3 { margin: 0; color: var(--turquoise); font-family: "Oxanium", sans-serif; }
 
-/* formularze inline */
-.inline-form { padding: .7rem .9rem; border-bottom: 1px dashed var(--border); }
-
-/* Numerowana lista */
-.habit-list {
-  list-style: decimal;
-  margin: .25rem 0 0 1.25rem;
-  padding: .6rem .9rem 1rem .5rem;
-  display: flex; flex-direction: column; gap: .5rem;
-}
-.habit-list > li { padding-left: .25rem; }
-
-/* Kafelek nawyku z kolorem */
+/* CHIP — pełna szerokość, jedno-liniowy, responsywny */
 .habit-item .habit-chip {
   position: relative;
-  display: inline-flex;
+  display: flex;
   align-items: center;
-  gap: .5rem;
+  justify-content: flex-start;
+  gap: .6rem;
   padding: .6rem .7rem;
   border-radius: .6rem;
   border: 1px solid var(--border);
   cursor: pointer;
   outline: none;
-  background: rgba(255,255,255,.03);
+  background: rgba(255, 255, 255, .03);
+  width: 100%;
+  min-height: 44px;
+  /* wygodna wysokość */
+  overflow: hidden;
+  /* nic nie wychodzi poza guzik */
+  line-height: 1.25;
+  /* skaluje CAŁĄ zawartość chipa delikatnie z viewportem */
+  font-size: clamp(.92rem, .86rem + .25vw, 1.05rem);
 }
-.habit-item.inactive .habit-chip { opacity: .75; filter: grayscale(.15); }
-.habit-item .habit-chip:focus-visible { box-shadow: 0 0 0 2px var(--focus); }
 
-/* Kropka + tytuł */
+/* LEWA kropka w kolorze nawyku */
 .habit-item .dot {
-  inline-size: .65rem; block-size: .65rem; border-radius: 50%;
-  box-shadow: 0 0 0 1px rgba(0,0,0,.25) inset;
+  flex: 0 0 auto;
+  inline-size: .68rem;
+  block-size: .68rem;
+  border-radius: 50%;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, .25) inset;
 }
-.habit-item .title { font-weight: 600; letter-spacing: .2px; }
 
-/* Popover po PRAWEJ stronie */
-.habit-item .popover {
+/* TYTUŁ — nie zawija się, elipsa, może się ścisnąć */
+.habit-item .title {
+  flex: 1 1 auto;
+  /* tytuł zajmuje resztę miejsca */
+  min-width: 0;
+  /* KLUCZ do elipsy w flexboxie */
+  white-space: nowrap;
+  /* bez zawijania */
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: clamp(.90rem, .85rem + .30vw, 1.06rem);
+}
+
+/* PRAWY licznik — nie ściska się i nie zawija */
+.habit-item .streak {
+  flex: 0 0 auto;
+  /* nie zmniejszaj prawej części */
+  margin-left: .5rem;
+  white-space: nowrap;
+  font-size: clamp(.80rem, .76rem + .25vw, .95rem);
+  opacity: .85;
+  display: inline-flex;
+  align-items: center;
+  gap: .35rem;
+}
+
+.habit-item .streak .flame {
+  line-height: 1;
+}
+
+/* POPOVER — po PRAWEJ stronie chipa; może wyjść poza kartę */
+.habit-popover {
   position: absolute;
-  z-index: 40;
-  top: 50%;
-  left: calc(100% + .6rem);
-  transform: translateY(-50%);
-  min-width: 18rem; max-width: min(28rem, 90vw);
-  background: var(--surface-3, var(--panel));
-  color: var(--white);
-  border: 1px solid var(--border-strong);
-  border-radius: .7rem;
-  padding: .7rem .8rem;
-  box-shadow: 0 12px 24px rgba(0,0,0,.35);
-}
-.habit-item .popover::before {
-  content: "";
-  position: absolute;
-  top: 50%; left: 0;
-  transform: translate(-100%, -50%);
-  border: .5rem solid transparent;
-  border-right-color: var(--surface-3, var(--panel));
-  filter: drop-shadow(-1px 0 0 var(--border-strong));
+  left: calc(100% + 12px) !important;
+  /* prawa krawędź chipa */
+  top: 50% !important;
+  /* środek w pionie */
+  transform: translateY(-50%) scale(.98);
+  opacity: 0;
+
+  z-index: 60;
+  min-width: 240px;
+  max-width: min(360px, 40vw);
+  pointer-events: none;
+  /* hover nie „zrywa” */
+  transition: opacity .16s ease, transform .18s ease;
+  filter: drop-shadow(0 10px 24px rgba(0, 0, 0, .35));
 }
 
-.popover-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: .35rem; }
-.popover-head strong { color: var(--white); }
-.popover-head .status { font-size: .8rem; opacity: .85; color: var(--turquoise); }
-
-.popover-desc { font-size: .9rem; opacity: .9; margin-bottom: .4rem; }
-.popover-meta {
-  display: flex; flex-wrap: wrap; gap: .35rem .6rem;
-  font-size: .8rem; opacity: .85; margin-bottom: .6rem;
+.habit-item:hover .habit-popover {
+  opacity: 1;
+  transform: translateY(-50%) translateX(0);
 }
-.popover-actions { display: flex; gap: .4rem; justify-content: flex-end; }
 
-/* helpery */
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+
+  .habit-popover,
+  .habit-item:hover .habit-popover {
+    transition: none;
+    transform: translateY(-50%);
+  }
+}
+
+/* Empty & error */
+.empty {
+  opacity: .7;
+  text-align: center;
+  border: 1px dashed var(--border);
+  border-radius: 8px;
+  padding: .6rem;
+}
+
+.empty.small {
+  padding: .5rem;
+  font-size: .9rem;
+}
+
 .form-error {
   color: #ffb3ad;
   background: rgba(255, 99, 71, .1);
   border: 1px solid rgba(255, 99, 71, .35);
-  border-radius: 8px; padding: .5rem .7rem;
+  border-radius: 8px;
+  padding: .5rem .7rem;
+  margin-top: .5rem;
 }
-.empty { opacity: .7; text-align: center; border: 1px dashed var(--border); border-radius: 8px; padding: .6rem; }
+
+/* Fallback zmiennych */
+:root {
+  --panel: rgba(255, 255, 255, .02);
+  --border: rgba(255, 255, 255, .12);
+  --shadow: 0 2px 18px rgba(0, 0, 0, .25);
+}
+
+.panel-head .head-actions .btn,
+.goal-card-head .head-actions .btn {
+  display: inline-flex;
+  /* ikona + tekst w jednej linii */
+  align-items: center;
+  justify-content: center;
+  gap: .4rem;
+  /* odstęp ikony od tekstu */
+  white-space: nowrap;
+  /* <-- najważniejsze: nie zawijaj */
+  line-height: 1;
+  /* kompaktowy wiersz */
+  min-height: 34px;
+  padding: .38rem .62rem;
+}
+
+/* Jeżeli globalna .btn ma inne wymuszenia szerokości, zabezpiecz: */
+.panel-head .head-actions .btn,
+.goal-card-head .head-actions .btn {
+  width: auto;
+  max-width: 100%;
+}
+
+/* --- Dodatkowe bezpieczniki dla chipa nawyku --- */
+.habit-item .habit-chip {
+  overflow: hidden;
+}
+
+/* nic nie wyjdzie poza guzik */
+.habit-item .title {
+  flex: 1 1 auto;
+  min-width: 0;
+  white-space: nowrap;
+}
+
+.habit-item .streak {
+  flex: 0 0 auto;
+  white-space: nowrap;
+}
