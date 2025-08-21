@@ -1,82 +1,153 @@
 import React, { useEffect, useMemo, useState } from "react";
+import "./MonthView.css";
 
 const API = import.meta.env.VITE_API_URL || "";
 
 const fmt = (d) => d.toISOString().slice(0, 10);
 const firstOfMonth = (d) => new Date(d.getFullYear(), d.getMonth(), 1);
-const lastOfMonth  = (d) => new Date(d.getFullYear(), d.getMonth() + 1, 0);
+const lastOfMonth = (d) => new Date(d.getFullYear(), d.getMonth() + 1, 0);
+const startOfWeek = (d) => { const nd = new Date(d); const w = (nd.getDay() + 6) % 7; nd.setDate(nd.getDate() - w); nd.setHours(0, 0, 0, 0); return nd; };
+const endOfWeek = (d) => { const s = startOfWeek(d); const e = new Date(s); e.setDate(s.getDate() + 6); e.setHours(23, 59, 59, 999); return e; };
 
-export default function MonthTable({ monthAnchor }) {
+export default function MonthView({ initialDate, onAdd }) {
+  const [anchor] = useState(() => initialDate ? new Date(initialDate) : new Date());
   const [tasks, setTasks] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const anchor = monthAnchor ? new Date(monthAnchor) : new Date();
+  const [habits, setHabits] = useState([]);
+  const [showHabits, setShowHabits] = useState(true);
+  const [selected, setSelected] = useState(null);
 
-  const range = useMemo(() => {
-    const s = firstOfMonth(anchor), e = lastOfMonth(anchor);
-    return { start: fmt(s), end: fmt(e) };
+  // pełne tygodnie obejmujące miesiąc
+  const grid = useMemo(() => {
+    const first = firstOfMonth(anchor);
+    const last = lastOfMonth(anchor);
+    const start = startOfWeek(first);
+    const end = endOfWeek(last);
+    const days = [];
+    const cur = new Date(start);
+    while (cur <= end) { days.push(new Date(cur)); cur.setDate(cur.getDate() + 1); }
+    return { start, end, days };
   }, [anchor]);
 
+  // dane: taski z zakresu siatki
   useEffect(() => {
     (async () => {
-      setLoading(true);
-      try {
-        const res = await fetch(`${API}/tasks?start_date=${range.start}&end_date=${range.end}`);
-        const data = await res.json();
-        setTasks(Array.isArray(data) ? data : []);
-      } catch (e) {
-        console.error(e);
-      } finally {
-        setLoading(false);
-      }
-    })();
-  }, [range.start, range.end]);
+      const r = await fetch(`${API}/tasks?start_date=${fmt(grid.start)}&end_date=${fmt(grid.end)}`);
+      setTasks((await r.json()) || []);
+    })().catch(console.error);
+  }, [grid.start, grid.end]);
 
-  const rows = useMemo(() => {
+  // dane: nawyki (raz)
+  useEffect(() => {
+    (async () => {
+      const r = await fetch(`${API}/habits`);
+      setHabits((await r.json()) || []);
+    })().catch(console.error);
+  }, []);
+
+  // mapowanie pozycji do dni
+  const itemsByDay = useMemo(() => {
     const m = {};
     for (const t of tasks) {
-      if (!t.time) continue;
-      const k = t.time.slice(0, 10);
-      (m[k] ||= []).push(t);
+      if (!t?.time) continue;
+      const key = String(t.time).slice(0, 10);
+      (m[key] ||= []).push({ id: `task-${t.id}`, type: "task", title: t.title, color: t.color || "#7aa7ff" });
     }
-    const orderedDays = Object.keys(m).sort();
-    return orderedDays.map((d) => ({
-      date: d,
-      items: m[d].sort((a, b) => new Date(a.time) - new Date(b.time)),
-    }));
-  }, [tasks]);
+    if (showHabits) {
+      for (const day of grid.days) {
+        for (const h of habits) {
+          if (h?.active === false) continue;
+          const start = new Date(h.start_date + "T00:00:00");
+          const until = h.repeat_until ? new Date(h.repeat_until + "T23:59:59") : null;
+          if (day < start) continue;
+          if (until && day > until) continue;
+          const wd = day.getDay() === 0 ? 6 : day.getDay() - 1; // 0=Pn
+          const list = Array.isArray(h.repeat_days) ? h.repeat_days : [];
+          if (!list.includes(wd)) continue;
+          const key = fmt(day);
+          (m[key] ||= []).push({ id: `habit-${h.id}-${key}`, type: "habit", title: h.title, color: h.color || "#6fead1" });
+        }
+      }
+    }
+    return m;
+  }, [tasks, habits, grid.days, showHabits]);
 
   return (
-    <div className="month-table">
-      {loading && <div className="hint">Wczytywanie…</div>}
-      <table>
-        <thead>
-          <tr>
-            <th>Data</th>
-            <th>Zadania</th>
-          </tr>
-        </thead>
-        <tbody>
-          {rows.map((r) => (
-            <tr key={r.date}>
-              <td className="col-date">{new Date(r.date).toLocaleDateString()}</td>
-              <td className="col-items">
-                {r.items.map((t) => (
-                  <div key={t.id} className="row-item" title={t.description || ""}>
-                    <span className="dot" style={{ background: t.color || "#ccc" }} />
-                    <span className="time">{new Date(t.time).toISOString().slice(11, 16)}</span>
-                    <span className="title">{t.title}</span>
-                  </div>
-                ))}
-              </td>
-            </tr>
+    <div className="month-shell">
+      {/* pasek akcji */}
+      <div className="month-toolbar">
+        <div />
+        <div className="right-actions">
+          <button className="btn ghost" onClick={() => setShowHabits(v => !v)}>
+            {showHabits ? "Ukryj nawyki" : "Pokaż nawyki"}
+          </button>
+        </div>
+      </div>
+
+      {/* siatka miesiąca */}
+      <div className="month-grid-card">
+        <div className="month-grid-head">
+          {["Pn", "Wt", "Śr", "Cz", "Pt", "Sb", "Nd"].map((d) => (
+            <div key={d} className="head-cell">{d}</div>
           ))}
-          {rows.length === 0 && !loading && (
-            <tr>
-              <td colSpan={2} style={{ opacity: .75, textAlign: "center" }}>Brak zdarzeń w tym miesiącu</td>
-            </tr>
-          )}
-        </tbody>
-      </table>
+        </div>
+
+        <div className="month-grid-body">
+          {grid.days.map((d) => {
+            const key = fmt(d);
+            const all = itemsByDay[key] || [];          // wszystkie elementy dnia
+            const items = all.slice(0, 6);                 // pokaż do 6 kropek
+            const more = Math.max(0, all.length - items.length); // ile ukrytych (N)
+            const sel = selected === key;
+            const other = d.getMonth() !== anchor.getMonth();
+
+            return (
+              <div
+                key={key}
+                className={`day-cell ${other ? "muted" : ""} ${sel ? "selected" : ""}`}
+                onClick={() => setSelected(key)}
+                onDoubleClick={() => onAdd?.(key)}
+              >
+                <div className="day-top">
+                  <span className="num">{d.getDate()}</span>
+                  <button
+                    className="mini-add"
+                    title="Dodaj"
+                    onClick={(e) => { e.stopPropagation(); onAdd?.(key); }}
+                  >+</button>
+                </div>
+
+                <div className="mini-items">
+                  {items.map((it) => (
+                    <div
+                      key={it.id}
+                      className={`mini-block ${it.type}`}
+                      title={it.title}
+                      style={{ background: it.color }}
+                    />
+                  ))}
+
+                  {/* >>> NOWE: „+N” gdy są ukryte elementy */}
+                  {more > 0 && (
+                    <button
+                      type="button"
+                      className="mini-more"
+                      title={`Pokaż jeszcze ${more}`}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        // najprościej: otwórz „Dodaj” albo przełącz na widok dnia w Twojej logice
+                        // tu: tylko zaznacz dzień; możesz podpiąć onAdd lub callback zmiany widoku
+                        setSelected(key);
+                      }}
+                    >
+                      +{more}
+                    </button>
+                  )}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
     </div>
   );
 }

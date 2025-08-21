@@ -16,6 +16,13 @@
 
   width: var(--cal-width, min(100%, 960px));
   margin: 0 auto;
+
+  /* === NOWE: przewijanie poziome na wąskich ekranach === */
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-gutter: stable both-edges;
+  /* ładniejsze zachowanie paska przewijania (wspierane w nowoczesnych przeglądarkach) */
 }
 
 /* ---------- Head ---------- */
@@ -24,8 +31,10 @@
   grid-template-columns: var(--gutter-w) repeat(7, minmax(120px, 1fr));
   background: var(--panel);
   border: 2px solid var(--border);
-}
 
+  /* === NOWE: szerokość treści wymusza poziomy scroll kontenera === */
+  min-width: 960px;
+}
 
 .head-cell {
   display: grid;
@@ -38,9 +47,6 @@
 .head-cell:last-child {
   border-right: none;
 }
-
-
-
 
 .head-cell .wd {
   font-family: "Oxanium", sans-serif;
@@ -70,8 +76,10 @@
   border-top-color: var(--grid-major);
   border-top-width: var(--grid-major-w);
   border-bottom: none;
-}
 
+  /* === NOWE: tak jak nagłówek, aby scrollowały się razem === */
+  min-width: 960px;
+}
 
 /* lewa kolumna z godzinami: same linie + overlay z etykietami */
 .hours-col {
@@ -101,7 +109,6 @@
   position: absolute;
   left: 0px;
   transform: translateY(-50%);
-
   /* środek etykiety na linii */
 }
 
@@ -187,9 +194,8 @@
 
 .event-block.habit::before {
   display: none;
+  /* wyłącz poprzedni wzorek */
 }
-
-/* wyłącz poprzedni wzorek */
 
 /* szybki checkbox */
 .ev-check {

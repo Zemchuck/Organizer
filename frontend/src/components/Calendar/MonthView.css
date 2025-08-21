@@ -150,3 +150,23 @@
     linear-gradient(-45deg, rgba(0, 0, 0, .35) 0 1px, transparent 1px 100%);
   opacity: .6;
 }
+
+/* „+N jeszcze” w komórce dnia */
+.mini-more {
+  display: inline-grid;
+  place-items: center;
+  height: 10px;
+  padding: 0 4px;
+  border: 1px dashed var(--border);
+  border-radius: 3px;
+  background: transparent;
+  color: var(--white);
+  font-size: 10px;
+  line-height: 10px;
+  cursor: pointer;
+}
+
+.mini-more:hover {
+  background: rgba(255, 255, 255, .06);
+  border-color: var(--border-strong);
+}

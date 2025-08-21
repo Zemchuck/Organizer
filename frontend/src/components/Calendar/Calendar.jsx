@@ -126,21 +126,28 @@ export default function Calendar() {
       <div className="cal-toolbar">
         <div className="left">
           <button
+            aria-label="Poprzedni okres"
             onClick={() =>
-              setDate(view === "day" ? addDays(date, -1)
-                : view === "week" ? addWeeks(date, -1)
-                  : addMonths(date, -1))
+              setDate(
+                view === "day" ? addDays(date, -1)
+                  : view === "week" ? addWeeks(date, -1)
+                    : addMonths(date, -1)
+              )
             }
           >
             ←
           </button>
+
           {/* ✅ „Dziś” ustawia lokalną datę bez UTC przesunięcia */}
           <button onClick={() => setDate(fmt(new Date()))}>Dziś</button>
           <button
+            aria-label="Następny okres"
             onClick={() =>
-              setDate(view === "day" ? addDays(date, 1)
-                : view === "week" ? addWeeks(date, 1)
-                  : addMonths(date, 1))
+              setDate(
+                view === "day" ? addDays(date, 1)
+                  : view === "week" ? addWeeks(date, 1)
+                    : addMonths(date, 1)
+              )
             }
           >
             →
