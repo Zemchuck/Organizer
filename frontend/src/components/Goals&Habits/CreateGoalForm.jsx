@@ -1,19 +1,23 @@
 import React, { useState } from "react";
 import "./CreateGoalForm.css";
 
-const API = import.meta.env.VITE_API_URL || "";
+// ✅ domyślnie "/api" (proxy przez Vite) lub pełny URL z .env
+const API = import.meta.env.VITE_API_URL || "/api";
 
 async function postJSON(url, payload) {
   const res = await fetch(url, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: { "Content-Type": "application/json", Accept: "application/json" },
     body: JSON.stringify(payload),
   });
+  const ct = res.headers.get("content-type") || "";
   const text = await res.text();
-  const isJSON = (res.headers.get("content-type") || "").includes("application/json");
-  const data = isJSON ? JSON.parse(text || "{}") : null;
-  if (!res.ok) throw new Error(data?.detail ? JSON.stringify(data.detail) : text);
-  return data;
+  if (!res.ok) {
+    const msg = text.slice(0, 180) || `HTTP ${res.status}`;
+    throw new Error(msg);
+  }
+  if (!ct.includes("application/json")) throw new Error(`API zwróciło ${ct}`);
+  return JSON.parse(text || "null");
 }
 
 export default function CreateGoalForm({ onCreated, onCancel }) {
@@ -35,8 +39,12 @@ export default function CreateGoalForm({ onCreated, onCancel }) {
       onCreated?.(created);
       setTitle("");
       setDescription("");
-    } catch (e) { console.error(e); setError("Nie udało się dodać celu."); }
-    finally { setSaving(false); }
+    } catch (e) {
+      console.error(e);
+      setError("Nie udało się dodać celu.");
+    } finally {
+      setSaving(false);
+    }
   }
 
   return (

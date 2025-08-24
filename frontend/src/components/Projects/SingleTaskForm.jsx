@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import "./SingleTaskForm.css";
 
-const API = import.meta.env.VITE_API_URL || "";
+const API = import.meta.env.VITE_API_URL || "/api";
 const DOW = ["Pn", "Wt", "Śr", "Cz", "Pt", "So", "Nd"];
 
 export default function SingleTaskForm({ projectId, onCreated, onCancel }) {

@@ -14,7 +14,7 @@ class TaskBase(BaseModel):
     color: Optional[str] = None
     status: Optional[bool] = None
 
-    project_id: Optional[int] = None           # ⬅️ OPCJONALNE
+    project_id: Optional[int] = None
     scheduled_for: Optional[ddate] = None
     order: Optional[int] = None
 
@@ -24,6 +24,9 @@ class TaskBase(BaseModel):
 
 
 class TaskCreate(TaskBase):
+    # WYMAGANY tytuł (≥1 znak)
+    title: str = Field(min_length=1)
+
     # pojedynczy task może być bez terminu (time=NULL)
     date: Optional[ddate] = None
     time: Optional[Union[dtime, str]] = None
@@ -37,49 +40,48 @@ class TaskCreate(TaskBase):
     @field_validator("priority", mode="before")
     @classmethod
     def _priority_to_enum(cls, v):
-        if v is None or isinstance(v, SA_PriorityEnum):
-            return v
-        return SA_PriorityEnum(v)
+      if v is None or isinstance(v, SA_PriorityEnum):
+          return v
+      return SA_PriorityEnum(v)
 
     @field_validator("time", mode="before")
     @classmethod
     def _time_str_to_time(cls, v):
-        if v is None or isinstance(v, dtime):
-            return v
-        s = str(v).strip()
-        # dopuszczamy HH:MM lub HH:MM:SS
-        if len(s) == 5 and s.count(":") == 1:
-            s = s + ":00"
-        try:
-            return dtime.fromisoformat(s)
-        except Exception:
-            raise ValueError("time musi być w formacie HH:MM lub HH:MM:SS")
+      if v is None or isinstance(v, dtime):
+          return v
+      s = str(v).strip()
+      if len(s) == 5 and s.count(":") == 1:
+          s = s + ":00"
+      try:
+          return dtime.fromisoformat(s)
+      except Exception:
+          raise ValueError("time musi być w formacie HH:MM lub HH:MM:SS")
 
     @field_validator("repeat_days")
     @classmethod
     def _check_repeat_days(cls, v):
-        if v is None:
-            return v
-        if any((d < 0 or d > 6) for d in v):
-            raise ValueError("repeat_days musi zawierać wartości 0..6")
-        return v
+      if v is None:
+          return v
+      if any((d < 0 or d > 6) for d in v):
+          raise ValueError("repeat_days musi zawierać wartości 0..6")
+      return v
 
     @model_validator(mode="after")
     def _validate(self):
-        # seria → wymagane date & time & repeat_until
-        if self.repeat_days and self.repeat_until:
-            if not (self.date and self.time):
-                raise ValueError("Seria wymaga jednocześnie pól date i time.")
-        else:
-            # jeśli podano jedno z (date,time), to podaj oba
-            if bool(self.date) ^ bool(self.time):
-                raise ValueError("Podaj jednocześnie date i time, albo żadne.")
-        if self.pomodoro_count is not None and self.pomodoro_count < 0:
-            self.pomodoro_count = 0
-        # project_id może być None (zadanie bez projektu)
-        if self.project_id in ("", 0):
-            self.project_id = None
-        return self
+      # seria → wymagane date & time & repeat_until
+      if self.repeat_days and self.repeat_until:
+          if not (self.date and self.time):
+              raise ValueError("Seria wymaga jednocześnie pól date i time.")
+      else:
+          # jeśli podano jedno z (date,time), to podaj oba
+          if bool(self.date) ^ bool(self.time):
+              raise ValueError("Podaj jednocześnie date i time, albo żadne.")
+      if self.pomodoro_count is not None and self.pomodoro_count < 0:
+          self.pomodoro_count = 0
+      # project_id może być None (zadanie bez projektu)
+      if self.project_id in ("", 0):
+          self.project_id = None
+      return self
 
 
 class TaskUpdate(BaseModel):
@@ -103,39 +105,39 @@ class TaskUpdate(BaseModel):
     @field_validator("priority", mode="before")
     @classmethod
     def _priority_to_enum(cls, v):
-        if v is None or isinstance(v, SA_PriorityEnum):
-            return v
-        return SA_PriorityEnum(v)
+      if v is None or isinstance(v, SA_PriorityEnum):
+          return v
+      return SA_PriorityEnum(v)
 
     @field_validator("time", mode="before")
     @classmethod
     def _time_str_to_time(cls, v):
-        if v is None or isinstance(v, dtime):
-            return v
-        s = str(v).strip()
-        if len(s) == 5 and s.count(":") == 1:
-            s = s + ":00"
-        try:
-            return dtime.fromisoformat(s)
-        except Exception:
-            raise ValueError("time musi być w formacie HH:MM lub HH:MM:SS")
+      if v is None or isinstance(v, dtime):
+          return v
+      s = str(v).strip()
+      if len(s) == 5 and s.count(":") == 1:
+          s = s + ":00"
+      try:
+          return dtime.fromisoformat(s)
+      except Exception:
+          raise ValueError("time musi być w formacie HH:MM lub HH:MM:SS")
 
     @field_validator("duration")
     @classmethod
     def _duration_range(cls, v):
-        if v is None:
-            return v
-        if not (1 <= v <= 1440):
-            raise ValueError("duration must be between 1 and 1440 minutes")
-        return v
+      if v is None:
+          return v
+      if not (1 <= v <= 1440):
+          raise ValueError("duration must be between 1 and 1440 minutes")
+      return v
 
     @model_validator(mode="after")
     def _normalize(self):
-        if self.pomodoro_count is not None and self.pomodoro_count < 0:
-            self.pomodoro_count = 0
-        if self.project_id in ("", 0):
-            self.project_id = None
-        return self
+      if self.pomodoro_count is not None and self.pomodoro_count < 0:
+          self.pomodoro_count = 0
+      if self.project_id in ("", 0):
+          self.project_id = None
+      return self
 
     model_config = {"from_attributes": True}
 
@@ -150,8 +152,8 @@ class TaskRead(TaskBase):
 
     @model_validator(mode="after")
     def _compute_is_series(self):
-        self.is_series = bool(self.series_id)
-        return self
+      self.is_series = bool(self.series_id)
+      return self
 
     model_config = {"from_attributes": True}
 
@@ -185,18 +187,18 @@ class HabitBase(BaseModel):
     @field_validator("color")
     @classmethod
     def _color_hex(cls, v):
-        if v is None: return v
-        if not HEX.match(v): raise ValueError("color must be #RRGGBB")
-        return v
+      if v is None: return v
+      if not HEX.match(v): raise ValueError("color must be #RRGGBB")
+      return v
 
     @field_validator("time_of_day")
     @classmethod
     def _truncate_seconds(cls, v: Optional[dtime]):
-        if v is None: return v
-        return v.replace(second=0, microsecond=0)
+      if v is None: return v
+      return v.replace(second=0, microsecond=0)
 
 class HabitCreate(HabitBase):
-    title: str
+    title: str = Field(min_length=1)
     goal_id: int
 
     start_date: ddate
@@ -209,40 +211,40 @@ class HabitCreate(HabitBase):
     @field_validator("repeat_days")
     @classmethod
     def _validate_days(cls, v: List[int]):
-        v = sorted(set(v or []))
-        if any((d < 0 or d > 6) for d in v):
-            raise ValueError("repeat_days musi zawierać wartości 0..6")
-        return v
+      v = sorted(set(v or []))
+      if any((d < 0 or d > 6) for d in v):
+          raise ValueError("repeat_days musi zawierać wartości 0..6")
+      return v
 
     @model_validator(mode="after")
     def _range_check(self):
-        if self.repeat_until and self.repeat_until < self.start_date:
-            raise ValueError("repeat_until nie może być przed start_date")
-        return self
+      if self.repeat_until and self.repeat_until < self.start_date:
+          raise ValueError("repeat_until nie może być przed start_date")
+      return self
 
 class HabitUpdate(HabitBase):
     @field_validator("duration")
     @classmethod
     def _duration_range(cls, v):
-        if v is None: return v
-        if not (1 <= v <= 1440):
-            raise ValueError("duration must be between 1 and 1440 minutes")
-        return v
+      if v is None: return v
+      if not (1 <= v <= 1440):
+          raise ValueError("duration must be between 1 and 1440 minutes")
+      return v
 
     @field_validator("repeat_days")
     @classmethod
     def _validate_days_update(cls, v: Optional[List[int]]):
-        if v is None: return v
-        v = sorted(set(v))
-        if any((d < 0 or d > 6) for d in v):
-            raise ValueError("repeat_days musi zawierać wartości 0..6")
-        return v
+      if v is None: return v
+      v = sorted(set(v))
+      if any((d < 0 or d > 6) for d in v):
+          raise ValueError("repeat_days musi zawierać wartości 0..6")
+      return v
 
     @model_validator(mode="after")
     def _range_check(self):
-        if self.repeat_until and self.start_date and self.repeat_until < self.start_date:
-            raise ValueError("repeat_until nie może być przed start_date")
-        return self
+      if self.repeat_until and self.start_date and self.repeat_until < self.start_date:
+          raise ValueError("repeat_until nie może być przed start_date")
+      return self
 
 class HabitRead(HabitBase):
     id: int
@@ -267,7 +269,7 @@ class ProjectBase(BaseModel):
     model_config = {"from_attributes": True}
 
 class ProjectCreate(ProjectBase):
-    title: str
+    title: str = Field(min_length=1)
 
 class ProjectUpdate(ProjectBase):
     pass
@@ -283,7 +285,7 @@ class GoalBase(BaseModel):
     model_config = {"from_attributes": True}
 
 class GoalCreate(GoalBase):
-    title: str
+    title: str = Field(min_length=1)
 
 class GoalUpdate(GoalBase):
     pass

@@ -1,8 +1,8 @@
 /* ---------- Ustawienia ---------- */
 .week-view {
-  --hour-h: 30px;
+  --hour-h: 40px; /* zwiększone z 30px */
   /* wysokość 1h */
-  --gutter-w: 56px;
+  --gutter-w: 70px; /* zwiększone z 56px */
   /* szersza rynna */
   --grid-major: rgba(255, 255, 255, .22);
   /* linie pełnej godziny */
@@ -14,7 +14,7 @@
   /* pionowe separatory dni */
   --now: #e53935;
 
-  width: var(--cal-width, min(100%, 960px));
+  width: var(--cal-width, min(100%, 1200px)); /* zwiększone z 960px */
   margin: 0 auto;
 
   /* === NOWE: przewijanie poziome na wąskich ekranach === */
@@ -28,12 +28,12 @@
 /* ---------- Head ---------- */
 .week-head {
   display: grid;
-  grid-template-columns: var(--gutter-w) repeat(7, minmax(120px, 1fr));
+  grid-template-columns: var(--gutter-w) repeat(7, minmax(150px, 1fr)); /* przywracam poprzednią wersję */
   background: var(--panel);
   border: 2px solid var(--border);
 
   /* === NOWE: szerokość treści wymusza poziomy scroll kontenera === */
-  min-width: 960px;
+  min-width: 1200px; /* zwiększone z 960px */
 }
 
 .head-cell {
@@ -42,6 +42,11 @@
   gap: .15rem;
   padding: .45rem 0;
   border-right: 1px solid var(--border);
+}
+
+.head-cell.gutter {
+  opacity: 0; /* ukrywam pustą komórkę nad kolumną godzin, ale zachowuję miejsce */
+  pointer-events: none; /* wyłączam interakcje */
 }
 
 .head-cell:last-child {
@@ -70,7 +75,7 @@
   position: relative;
   display: grid;
   margin-top: var(--week-gap, 10px);
-  grid-template-columns: var(--gutter-w) repeat(7, minmax(120px, 1fr));
+  grid-template-columns: var(--gutter-w) repeat(7, minmax(150px, 1fr)); /* przywracam poprzednią wersję */
   border: 1px solid var(--border);
   border-left: none;
   border-top-color: var(--grid-major);
@@ -78,7 +83,7 @@
   border-bottom: none;
 
   /* === NOWE: tak jak nagłówek, aby scrollowały się razem === */
-  min-width: 960px;
+  min-width: 1200px; /* zwiększone z 960px */
 }
 
 /* lewa kolumna z godzinami: same linie + overlay z etykietami */
@@ -98,7 +103,7 @@
   height: var(--hour-h);
 }
 
-/* etykiety godzin „przy linii” */
+/* etykiety godzin „przy linii" */
 .hour-labels {
   position: absolute;
   inset: 0 0 0 0;
@@ -109,29 +114,22 @@
   position: absolute;
   left: 0px;
   transform: translateY(-50%);
+
   /* środek etykiety na linii */
 }
 
 .hour-label {
   display: inline-block;
-  font-size: 2rem;
+  font-size: 2.5rem; /* zwiększone z 2rem */
   font-variant-numeric: tabular-nums;
   color: var(--gray);
   opacity: .9;
-
-  /* >>> to „maskuje” linię pod napisem: */
-  background: var(--panel);
-  /* ten sam kolor co tło panelu */
-  padding: 0 .35rem;
-  /* odrobina luzu po bokach */
-  border-radius: 5px;
-  /* miękkie rogi, żeby ładnie wyglądało */
 }
 
 /* kolumny dni */
 .day-col {
   position: relative;
-  min-height: calc(var(--hour-h) * 24);
+  min-height: calc(var(--hour-h) * 25); /* zmienione z 24 na 25 dla 0-24 godzin */
   border-right: 1px solid var(--grid-vert);
   background:
     repeating-linear-gradient(to bottom,
@@ -186,15 +184,48 @@
   overflow: hidden;
 }
 
-/* „czystsze” kafle Habit – bez pasków, bez agresywnego gradientu */
+/* „czystsze" kafle Habit – bez pasków, bez agresywnego gradientu */
 .event-block.habit {
-  background: linear-gradient(180deg, rgba(255, 255, 255, .06), rgba(0, 0, 0, .04)), var(--ev-color, #6fead1);
-  box-shadow: 0 4px 10px rgba(0, 0, 0, .28), inset 0 0 0 1px rgba(255, 255, 255, .12);
+  background: linear-gradient(135deg, 
+    rgba(255, 255, 255, 0.15) 0%, 
+    var(--ev-color, #6fead1) 30%, 
+    rgba(0, 0, 0, 0.1) 100%
+  );
+  box-shadow: 
+    0 4px 15px rgba(0, 0, 0, 0.3), 
+    inset 0 0 0 1px rgba(255, 255, 255, 0.2),
+    0 0 20px rgba(111, 234, 209, 0.3);
+  position: relative;
+  overflow: hidden;
 }
 
 .event-block.habit::before {
-  display: none;
-  /* wyłącz poprzedni wzorek */
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(45deg, 
+    transparent 0%, 
+    rgba(255, 255, 255, 0.1) 50%, 
+    transparent 100%
+  );
+  pointer-events: none;
+}
+
+.event-block.habit::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 3px;
+  height: 100%;
+  background: linear-gradient(to bottom, 
+    rgba(255, 255, 255, 0.8), 
+    rgba(255, 255, 255, 0.3)
+  );
+  border-radius: 2px;
 }
 
 /* szybki checkbox */
@@ -260,6 +291,11 @@
 .event-block.done .ev-title {
   text-decoration: line-through;
   opacity: .9;
+}
+
+.event-block:focus-visible {
+  outline: 2px solid var(--turquoise);
+  outline-offset: 2px;
 }
 
 /* ---------- Popovery ---------- */

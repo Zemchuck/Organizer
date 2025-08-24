@@ -116,11 +116,14 @@ export default function DayView({ date, tasks = [], habits = [], onSlotClick }) 
 
   useEffect(() => {
     const close = () => setHover(null);
+    const onKey = (e) => { if (e.key === "Escape") setHover(null); };
     window.addEventListener("scroll", close, true);
     window.addEventListener("resize", close);
+    window.addEventListener("keydown", onKey);
     return () => {
       window.removeEventListener("scroll", close, true);
       window.removeEventListener("resize", close);
+      window.removeEventListener("keydown", onKey);
     };
   }, []);
 
@@ -182,6 +185,18 @@ export default function DayView({ date, tasks = [], habits = [], onSlotClick }) 
                 }}
                 onMouseEnter={(e) => openPopover(e, ev)}
                 onMouseLeave={armHide}
+
+                /* === A11y: klik/klawiatura jak przycisk === */
+                onClick={(e) => openPopover(e, ev)}
+                role="button"
+                tabIndex={0}
+                aria-label={`Zdarzenie: ${ev.title}. ${ev.rangeStr}.`}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    openPopover({ currentTarget: e.currentTarget }, ev);
+                  }
+                }}
               >
                 <span className="ev-time">{ev.rangeStr}</span>
                 <span className="ev-title">{ev.title}</span>
@@ -195,6 +210,10 @@ export default function DayView({ date, tasks = [], habits = [], onSlotClick }) 
       {hover && (
         <div
           className="event-popover right"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="day-popover-title"
+          aria-describedby="day-popover-desc"
           style={{
             position: "fixed",
             top: hover.rect.top + hover.rect.height / 2 + window.scrollY,
@@ -208,8 +227,8 @@ export default function DayView({ date, tasks = [], habits = [], onSlotClick }) 
           onMouseEnter={cancelHide}
           onMouseLeave={armHide}
         >
-          <div className="ep-title">{hover.event.title}</div>
-          {hover.event.description && <div className="ep-desc">{hover.event.description}</div>}
+          <div id="day-popover-title" className="ep-title">{hover.event.title}</div>
+          {hover.event.description && <div id="day-popover-desc" className="ep-desc">{hover.event.description}</div>}
           <div
             className="popover-meta"
             style={{

@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import SingleTaskForm from "./SingleTaskForm.jsx";
 import "./ProjectsView.css";
 
-const API = import.meta.env.VITE_API_URL || "";
+const API = import.meta.env.VITE_API_URL || "/api";
 
 /* helpers */
 async function getJSON(url) {

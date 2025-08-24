@@ -1,7 +1,8 @@
 import React, { useState } from "react";
 import "./HabitForm.css";
 
-const API = import.meta.env.VITE_API_URL || "";
+// ✅ domyślnie "/api" (proxy przez Vite) lub pełny URL z .env
+const API = import.meta.env.VITE_API_URL || "/api";
 const DOW = ["Pn", "Wt", "Śr", "Cz", "Pt", "So", "Nd"];
 
 export default function HabitForm({ goalId, onCreated, onCancel }) {
@@ -14,7 +15,7 @@ export default function HabitForm({ goalId, onCreated, onCancel }) {
     duration: 25,
     repeat_until: "",
     repeat_days: [],
-    color: "#7A7AE6", // domyślny – w pickerze będzie widoczny
+    color: "#7A7AE6",
   });
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
@@ -30,8 +31,8 @@ export default function HabitForm({ goalId, onCreated, onCancel }) {
     e.preventDefault();
     setError("");
     if (!state.title.trim()) return setError("Podaj nazwę nawyku.");
-    if (!state.start_date)   return setError("Wybierz datę startu.");
-    if (!state.time_of_day)  return setError("Wybierz godzinę.");
+    if (!state.start_date) return setError("Wybierz datę startu.");
+    if (!state.time_of_day) return setError("Wybierz godzinę.");
 
     try {
       setSaving(true);
@@ -43,17 +44,18 @@ export default function HabitForm({ goalId, onCreated, onCancel }) {
         duration: Number(state.duration) || 25,
         repeat_until: state.repeat_until || null,
         repeat_days: state.repeat_days,
-        color: state.color, // ⟵ zapisujemy dokładnie to, co widzisz
+        color: state.color,
       };
       const res = await fetch(`${API}/habits`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", Accept: "application/json" },
         body: JSON.stringify(payload),
       });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const created = await res.json();
-      onCreated?.(created);
+      const text = await res.text();
+      if (!res.ok) throw new Error(text || `HTTP ${res.status}`);
+      const created = text ? JSON.parse(text) : null;
 
+      onCreated?.(created);
       setState({
         title: "", start_date: "", time_of_day: "",
         duration: 25, repeat_until: "", repeat_days: [], color: "#7A7AE6",
@@ -84,9 +86,7 @@ export default function HabitForm({ goalId, onCreated, onCancel }) {
 
       <div className="row two">
         <div className="form-group">
-          <label>
-            Data <span className="req" aria-hidden="true">*</span>
-          </label>
+          <label>Data <span className="req" aria-hidden="true">*</span></label>
           <input
             type="date"
             value={state.start_date}
@@ -96,9 +96,7 @@ export default function HabitForm({ goalId, onCreated, onCancel }) {
         </div>
 
         <div className="form-group">
-          <label>
-            Godzina:<span className="req" aria-hidden="true">*</span>
-          </label>
+          <label>Godzina:<span className="req" aria-hidden="true">*</span></label>
           <input
             type="time"
             value={state.time_of_day}
@@ -110,9 +108,7 @@ export default function HabitForm({ goalId, onCreated, onCancel }) {
 
       <div className="row two">
         <div className="form-group">
-          <label>
-            Czas trwania (min):<span className="req" aria-hidden="true">*</span>
-          </label>
+          <label>Czas trwania (min):<span className="req" aria-hidden="true">*</span></label>
           <input
             type="number"
             min="1"

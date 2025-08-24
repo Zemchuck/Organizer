@@ -1,145 +1,135 @@
-from datetime import datetime, date
-from typing import Optional
-import enum
+# app/models.py
+from __future__ import annotations
+from enum import Enum
 
 from sqlalchemy import (
-    Column, Integer, String, Boolean, Text, DateTime, Date,
-    ForeignKey, Enum as SqlEnum, CheckConstraint, Index, UniqueConstraint
+    Column, Integer, String, Boolean, Date, Time, DateTime,
+    ForeignKey, Index, UniqueConstraint, JSON, text
 )
-from sqlalchemy.orm import relationship
-
+from sqlalchemy.orm import relationship, Mapped, mapped_column
 from .db import Base
 
+# -------------------- Enums ----------------------
+class PriorityEnum(Enum):
+    LOW = 1
+    MEDIUM = 2
+    HIGH = 3
+    URGENT = 4
 
-# ───────── ENUMY ─────────
-class PriorityEnum(int, enum.Enum):
-    URGENT_IMPORTANT         = 1
-    IMPORTANT_NOT_URGENT     = 2
-    URGENT_NOT_IMPORTANT     = 3
-    NOT_URGENT_NOT_IMPORTANT = 4
-
-
-# ───────── GOAL (Cel) ─────────
-class Goal(Base):
-    __tablename__      = "goals"
-    __allow_unmapped__ = True
-
-    id          = Column(Integer, primary_key=True, index=True)
-    title       = Column(String(255), nullable=False)
-    description = Column(Text, nullable=True)
-
-    habits = relationship(
-        "Habit",
-        back_populates="goal",
-        cascade="all, delete",
-        order_by="Habit.order",
-    )
-
-
-# ───────── PROJECT (Projekt) ─────────
+# -------------------- Project --------------------
 class Project(Base):
-    __tablename__      = "projects"
-    __allow_unmapped__ = True
+    __tablename__ = "projects"
 
-    id          = Column(Integer, primary_key=True, index=True)
-    title       = Column(String(255), nullable=False)
-    description = Column(Text, nullable=True)
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    title: Mapped[str] = mapped_column(String(200), nullable=False)
+    description: Mapped[str | None] = mapped_column(String(1000))
 
-    tasks = relationship(
-        "Task",
-        back_populates="project",
-        cascade="all, delete",
-        order_by="Task.order",
-    )
+    tasks = relationship("Task", back_populates="project", cascade="all, delete-orphan")
 
+    def __repr__(self):
+        return f"<Project id={self.id} title={self.title!r}>"
 
-# ───────── TASK ─────────
+# -------------------- Goal -----------------------
+class Goal(Base):
+    __tablename__ = "goals"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    title: Mapped[str] = mapped_column(String(200), nullable=False)
+    description: Mapped[str | None] = mapped_column(String(1000))
+
+    habits = relationship("Habit", back_populates="goal", cascade="all, delete-orphan")
+
+    def __repr__(self):
+        return f"<Goal id={self.id} title={self.title!r}>"
+
+# -------------------- Task -----------------------
 class Task(Base):
-    __tablename__      = "tasks"
-    __allow_unmapped__ = True
+    __tablename__ = "tasks"
 
-    id = Column(Integer, primary_key=True, index=True)
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    project_id: Mapped[int | None] = mapped_column(ForeignKey("projects.id", ondelete="SET NULL"))
+    title: Mapped[str] = mapped_column(String(300), nullable=False)
+    description: Mapped[str | None] = mapped_column(String(2000))
 
-    # seria (dla zadań cyklicznych)
-    series_id = Column(String(36), nullable=True, index=True)
+    # pojedyncza data/godzina rozpoczęcia
+    time: Mapped[DateTime | None] = mapped_column(DateTime)
 
-    title       = Column(String(255), nullable=False)
-    description = Column(Text, nullable=True)
-    priority    = Column(SqlEnum(PriorityEnum), nullable=False,
-                         default=PriorityEnum.NOT_URGENT_NOT_IMPORTANT)
-    status      = Column(Boolean, nullable=False, default=False)
-    color       = Column(String(7), nullable=False, default="#CCCCCC")
+    duration: Mapped[int] = mapped_column(Integer, nullable=False, server_default=text("60"))  # minuty
+    color: Mapped[str | None] = mapped_column(String(7))  # "#RRGGBB"
+    status: Mapped[bool] = mapped_column(Boolean, nullable=False, server_default=text("0"))
+    priority: Mapped[int | None] = mapped_column(Integer, nullable=True)  # PriorityEnum value
+    
+    # Dodatkowe pola
+    scheduled_for: Mapped[Date | None] = mapped_column(Date, nullable=True)
+    series_id: Mapped[str | None] = mapped_column(String(36), nullable=True)  # UUID
+    pomodoro_count: Mapped[int] = mapped_column(Integer, nullable=False, server_default=text("0"))
+    order: Mapped[int | None] = mapped_column(Integer, nullable=True)
 
-    # termin (UTC) – może być NULL (nie trafia na kalendarz)
-    time     = Column(DateTime, nullable=True)
-    duration = Column(Integer, nullable=False, default=60)
-
-    # przynależność do projektu – TERAZ OPCJONALNA
-    project_id = Column(Integer, ForeignKey("projects.id"), nullable=True)  # ⬅️ zmiana
-
-    # kolejność & pomocnicze
-    order         = Column(Integer, nullable=True)
-    scheduled_for = Column(Date,    nullable=True)
-
-    # Pomodoro
-    pomodoro_count = Column(Integer, nullable=False, default=0)
-
-    project: Optional[Project] = relationship("Project", back_populates="tasks")
+    project = relationship("Project", back_populates="tasks")
 
     __table_args__ = (
         Index("ix_tasks_time", "time"),
-        Index("ix_tasks_project_order", "project_id", "order"),
-        CheckConstraint("duration >= 1 AND duration <= 1440", name="ck_tasks_duration_range"),
+        Index("ix_tasks_project_id", "project_id"),
+        Index("ix_tasks_scheduled_for", "scheduled_for"),
+        Index("ix_tasks_series_id", "series_id"),
     )
 
+    def __repr__(self):
+        return f"<Task id={self.id} title={self.title!r} time={self.time}>"
 
-# ───────── HABIT ─────────
+# -------------------- Habit ----------------------
 class Habit(Base):
-    __tablename__      = "habits"
-    __allow_unmapped__ = True
+    __tablename__ = "habits"
 
-    id = Column(Integer, primary_key=True, index=True)
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
 
-    title       = Column(String(255), nullable=False)
-    description = Column(Text, nullable=True)
-    color       = Column(String(7), nullable=False, default="#CCCCCC")
-    active      = Column(Boolean, nullable=False, default=True)
+    goal_id: Mapped[int] = mapped_column(ForeignKey("goals.id", ondelete="CASCADE"), nullable=False)
+    order: Mapped[int | None] = mapped_column(Integer)
 
-    # harmonogram:
-    start_date   = Column(Date, nullable=False)
-    time_of_day  = Column(DateTime, nullable=False)    # wykorzystujemy tylko składnik czasu (UTC)
-    duration     = Column(Integer, nullable=False, default=25)
-    days_mask    = Column(Integer, nullable=False, default=0)   # bitmask 0..127 (Pn..Nd)
-    repeat_until = Column(Date, nullable=True)
+    title: Mapped[str] = mapped_column(String(300), nullable=False)
+    description: Mapped[str | None] = mapped_column(String(2000))
+    color: Mapped[str | None] = mapped_column(String(7))  # "#RRGGBB"
+    active: Mapped[bool] = mapped_column(Boolean, nullable=False, server_default=text("1"))
 
-    # przynależność do celu – WYMAGANA
-    goal_id = Column(Integer, ForeignKey("goals.id"), nullable=False)
+    # harmonogram
+    start_date: Mapped[Date] = mapped_column(Date, nullable=False)
+    time_of_day: Mapped[Time] = mapped_column(Time, nullable=False)
+    duration: Mapped[int] = mapped_column(Integer, nullable=False, server_default=text("25"))  # minuty
 
-    # porządek w ramach celu
-    order = Column(Integer, nullable=True)
+    # ⬇⬇⬇ KLUCZOWA ZMIANA: lista dni jako JSON (np. [0,2,4])
+    repeat_days: Mapped[list[int]] = mapped_column(JSON, nullable=False)
 
-    # NOWE: relacja do logów
+    repeat_until: Mapped[Date | None] = mapped_column(Date)
+
+    goal = relationship("Goal", back_populates="habits")
     logs = relationship("HabitLog", back_populates="habit", cascade="all, delete-orphan")
 
-    goal: Optional[Goal] = relationship("Goal", back_populates="habits")
-
     __table_args__ = (
-        Index("ix_habits_goal_order", "goal_id", "order"),
-        CheckConstraint("duration >= 1 AND duration <= 1440", name="ck_habits_duration_range"),
-        CheckConstraint("days_mask >= 0 AND days_mask <= 127", name="ck_habits_days_mask"),
-        CheckConstraint("(repeat_until IS NULL) OR (repeat_until >= start_date)", name="ck_habits_repeat_until_range"),
+        Index("ix_habits_goal_id", "goal_id"),
+        Index("ix_habits_start_date", "start_date"),
+        Index("ix_habits_repeat_until", "repeat_until"),
+        # filtr po aktywnych nawykach idzie często:
+        Index("ix_habits_active", "active"),
     )
 
-class HabitLog(Base):
-    __tablename__      = "habit_logs"
-    __allow_unmapped__ = True
+    def __repr__(self):
+        return f"<Habit id={self.id} title={self.title!r}>"
 
-    id = Column(Integer, primary_key=True)
-    habit_id = Column(Integer, ForeignKey("habits.id", ondelete="CASCADE"), nullable=False, index=True)
-    done_on = Column(Date, nullable=False)  # lokalna data wykonania (YYYY-MM-DD)
+# -------------------- HabitLog -------------------
+class HabitLog(Base):
+    __tablename__ = "habit_logs"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    habit_id: Mapped[int] = mapped_column(ForeignKey("habits.id", ondelete="CASCADE"), nullable=False)
+    done_on: Mapped[Date] = mapped_column(Date, nullable=False)
 
     habit = relationship("Habit", back_populates="logs")
 
     __table_args__ = (
         UniqueConstraint("habit_id", "done_on", name="uq_habit_day"),
+        Index("ix_habit_logs_habit_id", "habit_id"),
+        Index("ix_habit_logs_done_on", "done_on"),
     )
+
+    def __repr__(self):
+        return f"<HabitLog habit_id={self.habit_id} done_on={self.done_on}>"

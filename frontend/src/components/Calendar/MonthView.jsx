@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import "./MonthView.css";
 
-const API = import.meta.env.VITE_API_URL || "";
+const API = import.meta.env.VITE_API_URL || "/api";
 
 const fmt = (d) => d.toISOString().slice(0, 10);
 const firstOfMonth = (d) => new Date(d.getFullYear(), d.getMonth(), 1);

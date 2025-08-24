@@ -3,7 +3,7 @@ import "./PomodoroTimer.css";
 import { useLocation } from "react-router-dom";
 
 
-const API = import.meta.env.VITE_API_URL || "";
+const API = import.meta.env.VITE_API_URL || "/api";
 
 export function Count({ task }) {
   // lekki badge używany np. w ProjectsView
@@ -170,7 +170,7 @@ async function incrementPomodoro(task) {
   if (!task?.id) return;
   try {
     const next = (task.pomodoro_count || 0) + 1;
-    const res = await fetch(`${import.meta.env.VITE_API_URL || ""}/tasks/${task.id}`, {
+    const res = await fetch(`${import.meta.env.VITE_API_URL || "/api"}/tasks/${task.id}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ pomodoro_count: next }),

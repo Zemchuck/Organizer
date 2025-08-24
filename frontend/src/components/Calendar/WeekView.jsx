@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 import "./WeekView.css";
 import { toLocalISO, mondayOf } from "../../helpers/date.js";
 
+const API = import.meta.env.VITE_API_URL || "/api";
 const POPOVER_W = 300;
 //dopełnij do 2 cyfr zerem z przodu
 const pad2 = (n) => String(n).padStart(2, "0");
@@ -139,7 +140,7 @@ export default function WeekView({ weekStart, tasks = [], habits = [], onSlotCli
   const todayKey = toLocalISO(today);
   const nowPosPct = ((today.getHours() * 60 + today.getMinutes()) / (24 * 60)) * 100;
 
-  const hours = Array.from({ length: 24 }, (_, i) => i);
+  const hours = Array.from({ length: 25 }, (_, i) => i); // 0-24 (25 godzin)
 
   function openPopover(e, ev) {
     const r = e.currentTarget.getBoundingClientRect();
@@ -150,15 +151,15 @@ export default function WeekView({ weekStart, tasks = [], habits = [], onSlotCli
     const isDone = !!doneMap[ev.id];
     try {
       if (ev.type === "task") {
-        await fetch(`/tasks/${ev.raw.id}`, {
+        await fetch(`${API}/tasks/${ev.raw.id}`, {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ status: !isDone }),
         });
       } else {
-        const url = `/habits/${ev.raw.id}/logs/${ev.dateKey}`;
+        const url = `${API}/habits/${ev.raw.id}/logs/${ev.dateKey}`;
         if (!isDone) {
-          await fetch(`/habits/${ev.raw.id}/logs`, {
+          await fetch(`${API}/habits/${ev.raw.id}/logs`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ done_on: ev.dateKey }),
@@ -178,7 +179,7 @@ export default function WeekView({ weekStart, tasks = [], habits = [], onSlotCli
   async function removeHabit(id, title) {
     if (!confirm(`Usunąć nawyk „${title}”?`)) return;
     try {
-      await fetch(`/habits/${id}`, { method: "DELETE" });
+      await fetch(`${API}/habits/${id}`, { method: "DELETE" });
       // UI – usuń wszystkie instancje tego nawyku z tygodnia
       // (tu prosto: filtr po .raw.id przy re-renderze z propsów)
       window.dispatchEvent(new CustomEvent("data:changed", { detail: { kind: "habit" } }));
@@ -215,7 +216,7 @@ export default function WeekView({ weekStart, tasks = [], habits = [], onSlotCli
           <div className="hour-labels">
             {hours.map((h) => (
               <div key={h} className="hour-label-el" style={{ top: `${(h / 24) * 100}%` }}>
-                <span className="hour-label">{pad2(h)}:00</span>
+                <span className="hour-label">{h === 24 ? "24:00" : `${pad2(h)}:00`}</span>
               </div>
             ))}
           </div>
@@ -258,11 +259,23 @@ export default function WeekView({ weekStart, tasks = [], habits = [], onSlotCli
                       "--ev-color": ev.color,
                     }}
                     onClick={(e) => openPopover(e, ev)}
+                    /* === A11y: klik/klawiatura jak przycisk === */
+                    role="button"
+                    tabIndex={0}
+                    aria-label={`Zdarzenie: ${ev.title}. Od ${minutesToHHMM(ev.startMin)} do ${minutesToHHMM(ev.endMin)}.`}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" || e.key === " ") {
+                        e.preventDefault();
+                        openPopover({ currentTarget: e.currentTarget }, ev);
+                      }
+                    }}
                   >
                     <button
                       className={`ev-check ${isDone ? "checked" : ""}`}
                       onClick={(e) => { e.stopPropagation(); toggleEventDone(ev); }}
                       title={isDone ? "Cofnij" : "Oznacz jako zrobione"}
+                      aria-pressed={isDone}
+                      aria-label={isDone ? "Cofnij oznaczenie jako zrobione" : "Oznacz jako zrobione"}
                     />
                     <span className="ev-title" title={ev.title}>{ev.title}</span>
                   </div>
@@ -283,6 +296,10 @@ export default function WeekView({ weekStart, tasks = [], habits = [], onSlotCli
         <div
           ref={popRef}
           className={`event-pop ${open.event.type}`}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby={open.event.type === "habit" ? "habit-popover-title" : "task-popover-title"}
+          aria-describedby={open.event.type === "habit" ? "habit-popover-desc" : "task-popover-desc"}
           style={{
             position: "fixed",
             top: open.rect.top + open.rect.height / 2 + window.scrollY,
@@ -296,12 +313,12 @@ export default function WeekView({ weekStart, tasks = [], habits = [], onSlotCli
         >
           {open.event.type === "habit" ? (
             /* POPoVER HABITU – 1:1 jak w „Cele i Nawyki”, ale akcje: Zalicz/Cofnij + Usuń */
-            <div className="habit-popover" role="dialog">
+            <div className="habit-popover" role="document">
               <div className="popover-head">
-                <strong>{open.event.title}</strong>
+                <strong id="habit-popover-title">{open.event.title}</strong>
                 <span className="status">Nawyk</span>
               </div>
-              <div className="popover-desc">{open.event.description || "Brak opisu"}</div>
+              <div id="habit-popover-desc" className="popover-desc">{open.event.description || "Brak opisu"}</div>
               <div className="popover-meta">
                 <span>Godzina: {minutesToHHMM(open.event.startMin)}</span>
                 <span>Czas trwania: {open.event.endMin - open.event.startMin}m</span>
@@ -321,9 +338,9 @@ export default function WeekView({ weekStart, tasks = [], habits = [], onSlotCli
             </div>
           ) : (
             /* POPoVER TASKA – prosty */
-            <div className="task-popover-like" role="dialog">
-              <div className="ep-title">{open.event.title}</div>
-              {open.event.description && <div className="ep-desc">{open.event.description}</div>}
+            <div className="task-popover-like" role="document">
+              <div id="task-popover-title" className="ep-title">{open.event.title}</div>
+              {open.event.description && <div id="task-popover-desc" className="ep-desc">{open.event.description}</div>}
               <div className="ep-times">
                 {minutesToHHMM(open.event.startMin)}–{minutesToHHMM(open.event.endMin)}
               </div>
