@@ -1,5 +1,11 @@
+@import '../../styles/variables.css';
+@import '../../styles/utilities.css';
+
 /* ---------- Ustawienia ---------- */
 .week-view {
+  --hour-h: 30px;
+  --gutter-w: 56px;
+  
   width: var(--cal-width, min(100%, 960px));
   margin: 0 auto;
 
@@ -124,7 +130,7 @@
   background: var(--bg);
   overflow: hidden;
   display: grid;
-  grid-template-rows: repeat(24, 1fr);
+  grid-template-rows: repeat(24, var(--hour-h)); /* Zmiana z 1fr na var(--hour-h) */
 }
 
 .week-view .day-col .hour-cell {
@@ -133,6 +139,7 @@
   box-sizing: border-box;
   border-top: 1px solid var(--grid-major);
   opacity: 0.8;
+  height: var(--hour-h); /* Dodaj konkretną wysokość */
 }
 
 
@@ -185,7 +192,7 @@
   background: var(--ev-color, #6fead1);
   border-left: 3px solid var(--ev-color, #6fead1);
   opacity: 0.9;
-  position: relative;
+  /* Usuń position: relative - bloki nawyków powinny pozostać absolutnie pozycjonowane */
 }
 
 .week-view .event-block.habit::before {
@@ -326,7 +333,7 @@
 .week-view .pop-btn {
   border: 1px solid var(--border);
   background: transparent;
-  color: var(--white);
+  color: var(--text);
   padding: .35rem .6rem;
   border-radius: 8px;
 }
@@ -338,25 +345,50 @@
 /* Habit – styl jak w „Cele i Nawyki" */
 .week-view .event-pop.habit .habit-popover {
   position: relative;
-  min-width: 20rem;
-  max-width: min(30rem, 90vw);
+  width: 100%;
+  min-width: 0;
+  max-width: none;
   background: var(--panel-elev);
   color: var(--text);
-  border: 2px solid var(--border-strong);
+  border: 2px solid var(--ev-color, var(--border-strong));
   border-radius: 12px;
   padding: 1rem 1.2rem;
   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+}
+
+/* HabitPopover component w WeekView */
+.week-view .event-pop.habit .habit-popover-container {
+  width: 100%;
+  height: auto;
+  position: relative;
+  z-index: 1;
+}
+
+.week-view .event-pop.habit .habit-popover-container .habit-popover {
+  position: relative;
+  width: 100%;
+  min-width: 0;
+  max-width: none;
+  background: var(--panel-elev);
+  color: var(--text);
+  border: 2px solid var(--ev-color, var(--border-strong));
+  border-radius: 12px;
+  padding: 1rem 1.2rem;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+  z-index: 1;
 }
 
 /* Task popover */
 .week-view .task-popover-like {
   background: var(--panel-elev);
   color: var(--text);
-  border: 2px solid var(--border-strong);
+  border: 2px solid var(--ev-color, var(--border-strong));
   border-radius: 12px;
   padding: 1rem 1.2rem;
-  min-width: 18rem;
-  max-width: min(25rem, 90vw);
+  width: 100%;
+  min-width: 0;
+  max-width: none;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
 }
 
 .week-view .event-pop {
@@ -364,6 +396,7 @@
   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.1);
   border-radius: 12px;
   backdrop-filter: blur(10px);
+  isolation: isolate;
 }
 
 .week-view .event-pop::before {
@@ -377,6 +410,8 @@
   border-style: solid;
   border-color: transparent var(--panel-elev) transparent transparent;
   filter: drop-shadow(-2px 0 0 var(--border-strong));
+  z-index: 0;
+  pointer-events: none;
 }
 
 .week-view .popover-head {
@@ -417,6 +452,40 @@
   display: flex;
   gap: .4rem;
   justify-content: flex-end;
+}
+
+/* Kolorowane przyciski */
+.week-view .habit-popover .pop-btn.primary,
+.week-view .task-popover-like .pop-btn.primary,
+.week-view .habit-popover-container .pop-btn.primary {
+  border-color: var(--ev-color, var(--turquoise));
+  color: var(--ev-color, var(--turquoise));
+  background: color-mix(in srgb, var(--ev-color, var(--turquoise)) 30%, transparent);
+}
+.week-view .habit-popover .pop-btn.primary:hover,
+.week-view .task-popover-like .pop-btn.primary:hover,
+.week-view .habit-popover-container .pop-btn.primary:hover {
+  /* nowoczesny, bezpieczny hover */
+  background: color-mix(in srgb, var(--ev-color, var(--turquoise)) 15%, transparent);
+}
+.week-view .habit-popover .pop-btn.danger,
+.week-view .task-popover-like .pop-btn.danger,
+.week-view .habit-popover-container .pop-btn.danger {
+  border-color: #ff4d4f; color: #ff4d4f;
+}
+.week-view .habit-popover .pop-btn.danger:hover,
+.week-view .task-popover-like .pop-btn.danger:hover,
+.week-view .habit-popover-container .pop-btn.danger:hover {
+  background: rgba(255,77,79,.1);
+}
+
+/* Specyficzne style dla przycisków w HabitPopover - nadpisują ogólne style WeekView */
+.week-view .habit-popover-container .pop-btn {
+  color: var(--text, #ffffff) !important;
+  background: transparent;
+}
+.week-view .habit-popover-container .pop-btn:hover {
+  background: rgba(255, 255, 255, 0.06) !important;
 }
 
 /* ---------- Responsive Design ---------- */
@@ -545,6 +614,12 @@
   .event-pop.habit .habit-popover {
     min-width: auto;
     max-width: none;
+    background: var(--panel-elev);
+    color: var(--text);
+    border: 2px solid var(--ev-color, var(--border-strong));
+    border-radius: 12px;
+    padding: 1rem 1.2rem;
+    box-shadow: 0 20px 40px rgba(0,0,0,.5);
   }
   
   .task-popover-like {

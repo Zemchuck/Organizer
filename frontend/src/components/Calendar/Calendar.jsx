@@ -109,6 +109,52 @@ export default function Calendar() {
     setTasks((prev) => [...prev, ...newItems]);
   };
 
+  // funkcja odświeżania danych
+  const refreshData = () => {
+    // wymuś ponowne pobranie tasków
+    if (range.start && range.end) {
+      (async () => {
+        setLoading(true);
+        try {
+          const url = `${API}/tasks?start_date=${range.start}&end_date=${range.end}`;
+          const data = await getJSON(url);
+          setTasks(Array.isArray(data) ? data : []);
+        } catch (e) {
+          console.error(e);
+          setTasks([]);
+        } finally {
+          setLoading(false);
+        }
+      })();
+    }
+    
+    // wymuś ponowne pobranie nawyków
+    (async () => {
+      try {
+        const h = await getJSON(`${API}/habits`);
+        setHabits(Array.isArray(h) ? h : []);
+      } catch (e) {
+        console.error(e);
+        setHabits([]);
+      }
+    })();
+  };
+
+  // nasłuchuj na zmiany danych z komponentów podrzędnych
+  useEffect(() => {
+    const handleDataChanged = (event) => {
+      const { kind } = event.detail;
+      if (kind === 'habit' || kind === 'task') {
+        refreshData();
+      }
+    };
+
+    window.addEventListener('data:changed', handleDataChanged);
+    return () => {
+      window.removeEventListener('data:changed', handleDataChanged);
+    };
+  }, [range.start, range.end]);
+
   const title = useMemo(() => {
     const d = new Date(date);
     if (view === "day")
@@ -174,6 +220,7 @@ export default function Calendar() {
           tasks={tasks}
           habits={habits}
           onSlotClick={(d) => setPopoverDate(d)}
+          onRefresh={refreshData}
         />
       )}
 
@@ -184,6 +231,7 @@ export default function Calendar() {
           tasks={tasks}
           habits={habits}
           onSlotClick={(d) => setPopoverDate(d)}
+          onRefresh={refreshData}
         />
       )}
 

@@ -1,6 +1,6 @@
 # backend/app/routers/habits.py
 from datetime import date as ddate, time as dtime, datetime as dt
-from typing import List
+from typing import List, Dict
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
@@ -102,13 +102,40 @@ def add_log(habit_id: int, payload: HabitLogCreate, db: Session = Depends(get_db
         # duplikat jest OK (idempotentnie)
     return {"habit_id": habit_id, "done_on": payload.done_on.isoformat()}
 
+@router.get("/habits/{habit_id}/logs/{done_on}")
+def get_log(habit_id: int, done_on: str, db: Session = Depends(get_db)):
+    """Sprawdź czy istnieje log dla danego nawyku w danym dniu"""
+    try:
+        d = ddate.fromisoformat(done_on)
+    except Exception:
+        raise HTTPException(status_code=400, detail="Bad date format; expected YYYY-MM-DD")
+    
+    h = db.get(models.Habit, habit_id)
+    if not h:
+        raise HTTPException(status_code=404, detail="Habit not found")
+    
+    log = db.query(models.HabitLog).filter(
+        models.HabitLog.habit_id == habit_id,
+        models.HabitLog.done_on == d
+    ).first()
+    
+    if not log:
+        raise HTTPException(status_code=404, detail="Log not found")
+    
+    return {"habit_id": habit_id, "done_on": done_on}
+
 @router.delete("/habits/{habit_id}/logs/{done_on}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_log(habit_id: int, done_on: str, db: Session = Depends(get_db)):
     try:
         d = ddate.fromisoformat(done_on)
     except Exception:
         raise HTTPException(status_code=400, detail="Bad date format; expected YYYY-MM-DD")
-    log = db.get(models.HabitLog, {"habit_id": habit_id, "done_on": d})
+    
+    log = db.query(models.HabitLog).filter(
+        models.HabitLog.habit_id == habit_id,
+        models.HabitLog.done_on == d
+    ).first()
+    
     if not log:
         return None
     db.delete(log)
@@ -165,7 +192,10 @@ def habits_progress(db: Session = Depends(get_db)):
                     break
                 # czy w ten dzień powinien wystąpić nawyk?
                 if (cur.weekday() in rdays):
-                    has = db.get(models.HabitLog, {"habit_id": h.id, "done_on": cur})
+                    has = db.query(models.HabitLog).filter(
+                        models.HabitLog.habit_id == h.id,
+                        models.HabitLog.done_on == cur
+                    ).first()
                     if not has:
                         break
                     streak += 1
@@ -179,4 +209,30 @@ def habits_progress(db: Session = Depends(get_db)):
             print(f"Error processing habit {h.id}: {e}")
             continue
             
+    return out
+
+# -------- Bulk Logs --------
+
+@router.get("/habits/logs")
+def list_habit_logs_in_range(
+    start: ddate = Query(..., description="Start date (YYYY-MM-DD)"),
+    end: ddate = Query(..., description="End date (YYYY-MM-DD)"),
+    db: Session = Depends(get_db)
+) -> Dict[int, List[str]]:
+    """
+    Pobierz wszystkie logi nawyków w zakresie dat.
+    Zwraca mapę: {habit_id: [list_of_dates]}
+    """
+    rows = (
+        db.query(models.HabitLog.habit_id, models.HabitLog.done_on)
+        .filter(models.HabitLog.done_on >= start, models.HabitLog.done_on <= end)
+        .all()
+    )
+    
+    out: Dict[int, List[str]] = {}
+    for habit_id, done_on in rows:
+        if habit_id not in out:
+            out[habit_id] = []
+        out[habit_id].append(done_on.isoformat())
+    
     return out

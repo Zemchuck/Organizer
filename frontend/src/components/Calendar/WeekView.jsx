@@ -1,5 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import "./WeekView.css";
+import HabitPopover from "./HabitPopover";
+import "./HabitPopover.css";
 import { toLocalISO, mondayOf } from "../../helpers/date.js";
 
 const API = import.meta.env.VITE_API_URL || "/api";
@@ -9,7 +11,16 @@ const pad2 = (n) => String(n).padStart(2, "0");
 
 // ---- helpers czasu ----
 function timeToMinutes(tstr) {
-  const [hh = "00", mm = "00"] = String(tstr || "").split(":");
+  if (!tstr) return 0;
+  
+  // Jeśli to obiekt z właściwościami hour i minute (z bazy danych)
+  if (typeof tstr === 'object' && tstr.hour !== undefined && tstr.minute !== undefined) {
+    return tstr.hour * 60 + tstr.minute;
+  }
+  
+  // Jeśli to string w formacie "HH:MM" lub "HH:MM:SS"
+  const str = String(tstr);
+  const [hh = "00", mm = "00"] = str.split(":");
   return parseInt(hh, 10) * 60 + parseInt(mm, 10);
 }
 function minutesToHHMM(totalMin) {
@@ -70,7 +81,7 @@ export default function WeekView({ weekStart, tasks = [], habits = [], onSlotCli
     return arr;
   }, [start]);
 
-  // POPoVER: „klejący się”
+  // POPoVER: „klejący się"
   const [open, setOpen] = useState(null); // { rect, event, anchor }
   const popRef = useRef(null);
   useEffect(() => {
@@ -90,8 +101,102 @@ export default function WeekView({ weekStart, tasks = [], habits = [], onSlotCli
     };
   }, [open]);
 
-  // lokalny stan „done” (optymistyczny toggle)
+  // lokalny stan „done" (optymistyczny toggle)
   const [doneMap, setDoneMap] = useState({});
+
+  // stan wymuszający odświeżanie danych
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
+
+  // cele do wyświetlania nazw w popoverach nawyków
+  const [goals, setGoals] = useState([]);
+
+  // pobierz cele
+  useEffect(() => {
+    (async () => {
+      try {
+        const response = await fetch(`${API}/goals`);
+        const data = await response.json();
+        setGoals(Array.isArray(data) ? data : []);
+      } catch (e) {
+        console.error("Nie udało się pobrać celów:", e);
+        setGoals([]);
+      }
+    })();
+  }, [refreshTrigger]);
+
+  // Nasłuchuj na zmiany danych z innych komponentów
+  useEffect(() => {
+    const handleDataChanged = (event) => {
+      const { kind } = event.detail;
+      if (kind === 'habit' || kind === 'task') {
+        // Odśwież dane - zresetuj doneMap i wymuś ponowne załadowanie
+        setDoneMap({});
+        setRefreshTrigger(prev => prev + 1);
+      }
+    };
+
+    window.addEventListener('data:changed', handleDataChanged);
+    return () => {
+      window.removeEventListener('data:changed', handleDataChanged);
+    };
+  }, []);
+
+  // helper do pobierania nazwy celu
+  const getGoalTitle = (goalId) => {
+    if (!goalId) return "—";
+    const goal = goals.find(g => g.id === goalId);
+    return goal ? goal.title : `#${goalId}`;
+  };
+
+  // Inicjalizacja doneMap na podstawie statusu tasków
+  useEffect(() => {
+    const newDoneMap = {};
+    for (const t of tasks) {
+      if (typeof t.status === "boolean") {
+        newDoneMap[`task-${t.id}`] = !!t.status;
+      }
+    }
+    setDoneMap(prev => ({ ...prev, ...newDoneMap }));
+  }, [tasks, refreshTrigger]);
+
+  // Inicjalizacja doneMap dla nawyków na podstawie logów
+  useEffect(() => {
+    const loadHabitLogs = async () => {
+      if (days.length !== 7) return; // Potrzebujemy pełnego tygodnia
+      
+      const start = toLocalISO(days[0]);
+      const end = toLocalISO(days[6]);
+      
+      try {
+        const response = await fetch(`${API}/habits/logs?start=${start}&end=${end}`, {
+          headers: { Accept: "application/json" },
+        });
+        
+        if (!response.ok) {
+          console.error("Błąd podczas pobierania logów nawyków:", response.status);
+          return;
+        }
+        
+        const byHabit = await response.json(); // { [habit_id]: ["YYYY-MM-DD", ...] }
+        const newDoneMap = {};
+        
+        for (const h of habits) {
+          const dates = byHabit[h.id] || [];
+          for (const dateStr of dates) {
+            newDoneMap[`habit-${h.id}-${dateStr}`] = true;
+          }
+        }
+        
+        setDoneMap(prev => ({ ...prev, ...newDoneMap }));
+      } catch (e) {
+        console.error("Błąd podczas pobierania logów nawyków:", e);
+      }
+    };
+    
+    if (habits.length > 0 && days.length === 7) {
+      loadHabitLogs();
+    }
+  }, [habits, days, refreshTrigger]);
 
   const eventsByDay = useMemo(() => {
     const map = new Map(days.map(d => [toLocalISO(d), []]));
@@ -111,7 +216,6 @@ export default function WeekView({ weekStart, tasks = [], habits = [], onSlotCli
         color: t.color || "#7aa7ff",
         startMin, endMin, raw: t, dateKey: key,
       });
-      if (typeof t.status === "boolean") doneMap[`task-${t.id}`] ??= !!t.status;
     }
 
     for (const day of days) {
@@ -132,9 +236,11 @@ export default function WeekView({ weekStart, tasks = [], habits = [], onSlotCli
     }
 
     const laid = {};
-    for (const [k, arr] of map.entries()) laid[k] = layoutBlocks(arr);
+    for (const [k, arr] of map.entries()) {
+      laid[k] = layoutBlocks(arr);
+    }
     return laid;
-  }, [days, tasks, habits]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [days, tasks, habits, refreshTrigger]); // Usuń doneMap z zależności
 
   const today = new Date();
   const todayKey = toLocalISO(today);
@@ -151,40 +257,170 @@ export default function WeekView({ weekStart, tasks = [], habits = [], onSlotCli
     const isDone = !!doneMap[ev.id];
     try {
       if (ev.type === "task") {
-        await fetch(`${API}/tasks/${ev.raw.id}`, {
+        const response = await fetch(`${API}/tasks/${ev.raw.id}`, {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ status: !isDone }),
         });
+        
+        if (!response.ok) {
+          if (response.status === 404) {
+            alert(`Zadanie "${ev.title}" nie istnieje lub zostało usunięte.`);
+            window.dispatchEvent(new CustomEvent("data:changed", { detail: { kind: "task" } }));
+            return;
+          }
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
       } else {
         const url = `${API}/habits/${ev.raw.id}/logs/${ev.dateKey}`;
+        let response;
+        
         if (!isDone) {
-          await fetch(`${API}/habits/${ev.raw.id}/logs`, {
+          response = await fetch(`${API}/habits/${ev.raw.id}/logs`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ done_on: ev.dateKey }),
           });
         } else {
-          await fetch(url, { method: "DELETE" });
+          response = await fetch(url, { method: "DELETE" });
+        }
+        
+        if (!response.ok) {
+          if (response.status === 404) {
+            alert(`Nawyk "${ev.title}" nie istnieje lub został usunięty.`);
+            window.dispatchEvent(new CustomEvent("data:changed", { detail: { kind: "habit" } }));
+            return;
+          }
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
         }
       }
+      
       setDoneMap((m) => ({ ...m, [ev.id]: !isDone }));
       // powiadom inne widoki (np. Cele i Nawyki) że dane się zmieniły
       window.dispatchEvent(new CustomEvent("data:changed", { detail: { kind: ev.type } }));
     } catch (e) {
-      console.error(e);
+      console.error("Błąd podczas zmiany statusu:", e);
+      alert(`Nie udało się zmienić statusu: ${e.message}`);
     }
   }
 
   async function removeHabit(id, title) {
-    if (!confirm(`Usunąć nawyk „${title}”?`)) return;
+    if (!confirm(`Usunąć nawyk „${title}"?`)) return;
     try {
-      await fetch(`${API}/habits/${id}`, { method: "DELETE" });
+      const response = await fetch(`${API}/habits/${id}`, { method: "DELETE" });
+      
+      if (!response.ok) {
+        if (response.status === 404) {
+          alert(`Nawyk "${title}" nie istnieje lub został już usunięty.`);
+          window.dispatchEvent(new CustomEvent("data:changed", { detail: { kind: "habit" } }));
+          setOpen(null);
+          return;
+        }
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+      
       // UI – usuń wszystkie instancje tego nawyku z tygodnia
       // (tu prosto: filtr po .raw.id przy re-renderze z propsów)
       window.dispatchEvent(new CustomEvent("data:changed", { detail: { kind: "habit" } }));
       setOpen(null);
-    } catch (e) { console.error(e); }
+    } catch (e) { 
+      console.error("Błąd podczas usuwania nawyku:", e);
+      alert(`Nie udało się usunąć nawyku: ${e.message}`);
+    }
+  }
+
+  async function removeTask(id, title) {
+    if (!confirm(`Usunąć zadanie „${title}"?`)) return;
+    try {
+      const response = await fetch(`${API}/tasks/${id}`, { method: "DELETE" });
+      
+      if (!response.ok) {
+        if (response.status === 404) {
+          alert(`Zadanie "${title}" nie istnieje lub zostało już usunięte.`);
+          window.dispatchEvent(new CustomEvent("data:changed", { detail: { kind: "task" } }));
+          setOpen(null);
+          return;
+        }
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+      
+      // aktualizacja UI
+      setDoneMap(m => {
+        const c = { ...m };
+        delete c[`task-${id}`];
+        return c;
+      });
+      // powiadom inne widoki o zmianie danych
+      window.dispatchEvent(new CustomEvent("data:changed", { detail: { kind: "task" } }));
+      setOpen(null);
+    } catch (e) {
+      console.error("Błąd podczas usuwania zadania:", e);
+      alert(`Nie udało się usunąć zadania: ${e.message}`);
+    }
+  }
+
+  async function editTask(task) {
+    // TODO: Implementuj pełną edycję zadania
+    // Na razie otwórz alert z podstawowymi informacjami
+    const newTitle = prompt("Edytuj nazwę zadania:", task.title);
+    if (newTitle === null || newTitle.trim() === "") return;
+    
+    try {
+      const response = await fetch(`${API}/tasks/${task.raw.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ title: newTitle.trim() }),
+      });
+      
+      if (!response.ok) {
+        if (response.status === 404) {
+          alert(`Zadanie "${task.title}" nie istnieje lub zostało usunięte.`);
+          window.dispatchEvent(new CustomEvent("data:changed", { detail: { kind: "task" } }));
+          setOpen(null);
+          return;
+        }
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+      
+      // powiadom inne widoki o zmianie danych
+      window.dispatchEvent(new CustomEvent("data:changed", { detail: { kind: "task" } }));
+      setOpen(null);
+    } catch (e) {
+      console.error("Błąd podczas edycji zadania:", e);
+      alert(`Nie udało się zaktualizować zadania: ${e.message}`);
+    }
+  }
+
+  async function editHabit(habit) {
+    // TODO: Implementuj pełną edycję nawyku
+    // Na razie otwórz alert z podstawowymi informacjami
+    const newTitle = prompt("Edytuj nazwę nawyku:", habit.title);
+    if (newTitle === null || newTitle.trim() === "") return;
+    
+    try {
+      const response = await fetch(`${API}/habits/${habit.raw.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ title: newTitle.trim() }),
+      });
+      
+      if (!response.ok) {
+        if (response.status === 404) {
+          alert(`Nawyk "${habit.title}" nie istnieje lub został usunięty.`);
+          window.dispatchEvent(new CustomEvent("data:changed", { detail: { kind: "habit" } }));
+          setOpen(null);
+          return;
+        }
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+      
+      // powiadom inne widoki o zmianie danych
+      window.dispatchEvent(new CustomEvent("data:changed", { detail: { kind: "habit" } }));
+      setOpen(null);
+    } catch (e) {
+      console.error("Błąd podczas edycji nawyku:", e);
+      alert(`Nie udało się zaktualizować nawyku: ${e.message}`);
+    }
   }
 
   return (
@@ -236,8 +472,24 @@ export default function WeekView({ weekStart, tasks = [], habits = [], onSlotCli
                 const top = (ev.startMin / (24 * 60)) * 100;
                 const height = Math.max(((ev.endMin - ev.startMin) / (24 * 60)) * 100, 2.5);
                 const gap = 2;
-                const width = Math.max(100 / ev.colCount - gap, 10);
-                const left = ev.col * (100 / ev.colCount) + gap / 2;
+                
+                // Poprawione obliczenia szerokości i pozycji
+                let widthPct = 100 / ev.colCount - gap;
+                let leftPct;
+                
+                if (widthPct < 10) {
+                  // Gdy bloki są ściśnięte do minimum, usuń marginesy zewnętrzne
+                  widthPct = 10;
+                  leftPct = ev.col * (widthPct + gap);
+                } else {
+                  // Normalne obliczenia z marginesami
+                  leftPct = ev.col * (100 / ev.colCount) + gap / 2;
+                }
+                
+                // Upewnij się, że blok nie wychodzi poza kolumnę
+                const maxLeft = 100 - widthPct;
+                const left = Math.min(leftPct, maxLeft);
+                const width = widthPct;
 
                 const kind = ev.type === "habit" ? "habit" : "task";
                 const dur = ev.endMin - ev.startMin;
@@ -301,51 +553,81 @@ export default function WeekView({ weekStart, tasks = [], habits = [], onSlotCli
           aria-describedby={open.event.type === "habit" ? "habit-popover-desc" : "task-popover-desc"}
           style={{
             position: "fixed",
-            top: open.rect.top + open.rect.height / 2 + window.scrollY,
+            top: open.rect.top + open.rect.height / 2,
             left: Math.min(
-              window.scrollX + window.innerWidth - POPOVER_W - 8,
-              open.rect.right + window.scrollX + 10
+              window.innerWidth - POPOVER_W - 8,
+              open.rect.right + 10
             ),
             width: POPOVER_W,
             transform: "translateY(-50%)",
           }}
         >
           {open.event.type === "habit" ? (
-            /* POPoVER HABITU – 1:1 jak w „Cele i Nawyki”, ale akcje: Zalicz/Cofnij + Usuń */
-            <div className="habit-popover" role="document">
+            /* POPoVER HABITU – skopiowany 1:1 z taska */
+            <div 
+              className="task-popover-like" 
+              style={{ "--ev-color": open.event.color }}
+              role="document"
+            >
               <div className="popover-head">
                 <strong id="habit-popover-title">{open.event.title}</strong>
-                <span className="status">Nawyk</span>
+                <span className="status">
+                  {doneMap[open.event.id] ? "Zrobione" : "Do zrobienia"}
+                </span>
               </div>
-              <div id="habit-popover-desc" className="popover-desc">{open.event.description || "Brak opisu"}</div>
+
+              {open.event.description && (
+                <div id="habit-popover-desc" className="popover-desc">
+                  {open.event.description}
+                </div>
+              )}
+
               <div className="popover-meta">
                 <span>Godzina: {minutesToHHMM(open.event.startMin)}</span>
                 <span>Czas trwania: {open.event.endMin - open.event.startMin}m</span>
+                <span>Cel: {getGoalTitle(open.event.raw?.goal_id)}</span>
               </div>
+
               <div className="popover-actions">
-                <button type="button" className="btn small" onClick={() => toggleEventDone(open.event)}>
-                  {doneMap[open.event.id] ? "Cofnij dzisiaj" : "Zalicz dzisiaj"}
-                </button>
-                <button
-                  type="button"
-                  className="btn small danger"
-                  onClick={() => removeHabit(open.event.raw.id, open.event.title)}
-                >
-                  Usuń
+                <button className="pop-btn primary" onClick={() => toggleEventDone(open.event)}>
+                  {doneMap[open.event.id] ? "Cofnij" : "Oznacz jako zrobione"}
                 </button>
               </div>
             </div>
           ) : (
-            /* POPoVER TASKA – prosty */
-            <div className="task-popover-like" role="document">
-              <div id="task-popover-title" className="ep-title">{open.event.title}</div>
-              {open.event.description && <div id="task-popover-desc" className="ep-desc">{open.event.description}</div>}
-              <div className="ep-times">
-                {minutesToHHMM(open.event.startMin)}–{minutesToHHMM(open.event.endMin)}
+            /* POPoVER TASKA – ujednolicony z popoverem nawyku */
+            <div 
+              className="task-popover-like" 
+              style={{ "--ev-color": open.event.color }}
+              role="document"
+            >
+              <div className="popover-head">
+                <strong id="task-popover-title">{open.event.title}</strong>
+                <span className="status">
+                  {doneMap[open.event.id] ? "Zrobione" : "Do zrobienia"}
+                </span>
               </div>
-              <div className="ep-actions">
-                <button className="pop-btn" onClick={() => toggleEventDone(open.event)}>
-                  {doneMap[open.event.id] ? "Cofnij wykonanie" : "Oznacz jako zrobione"}
+
+              {open.event.description && (
+                <div id="task-popover-desc" className="popover-desc">
+                  {open.event.description}
+                </div>
+              )}
+
+              <div className="popover-meta">
+                <span>Godzina: {minutesToHHMM(open.event.startMin)}</span>
+                <span>Czas trwania: {open.event.endMin - open.event.startMin}m</span>
+              </div>
+
+              <div className="popover-actions">
+                <button className="pop-btn primary" onClick={() => toggleEventDone(open.event)}>
+                  {doneMap[open.event.id] ? "Cofnij" : "Oznacz jako zrobione"}
+                </button>
+                <button className="pop-btn" onClick={() => editTask(open.event)}>
+                  Edytuj
+                </button>
+                <button className="pop-btn danger" onClick={() => removeTask(open.event.raw.id, open.event.title)}>
+                  Usuń zadanie
                 </button>
               </div>
             </div>

@@ -124,7 +124,7 @@
   background: var(--ev-color, #6fead1);
   border-left: 3px solid var(--ev-color, #6fead1);
   opacity: 0.9;
-  position: relative;
+  /* Usuń position: relative - bloki nawyków powinny pozostać absolutnie pozycjonowane */
 }
 
 .day-view .event-block.habit::before {
@@ -255,6 +255,7 @@
   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.1);
   border-radius: 12px;
   backdrop-filter: blur(10px);
+  isolation: isolate;
 }
 
 .day-view .event-pop::before {
@@ -267,19 +268,23 @@
   border-style: solid;
   border-color: transparent var(--panel-elev) transparent transparent;
   filter: drop-shadow(-2px 0 0 var(--border-strong));
+  z-index: 0;
+  pointer-events: none;
 }
 
 /* Habit popover */
 .day-view .event-pop.habit .habit-popover {
   position: relative;
-  min-width: 20rem;
-  max-width: min(30rem, 90vw);
+  width: 100%;
+  min-width: 0;
+  max-width: none;
   background: var(--panel-elev);
   color: var(--text);
-  border: 2px solid var(--border-strong);
+  border: 2px solid var(--ev-color, var(--border-strong));
   border-radius: 12px;
   padding: 1rem 1.2rem;
   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+  z-index: 1;
 }
 
 .day-view .popover-head {
@@ -322,15 +327,37 @@
   justify-content: flex-end;
 }
 
+/* Kolorowane przyciski */
+.day-view .habit-popover .pop-btn.primary,
+.day-view .task-popover-like .pop-btn.primary {
+  border-color: var(--ev-color, var(--turquoise));
+  color: var(--ev-color, var(--turquoise));
+  background: color-mix(in srgb, var(--ev-color, var(--turquoise)) 30%, transparent);
+}
+.day-view .habit-popover .pop-btn.primary:hover,
+.day-view .task-popover-like .pop-btn.primary:hover {
+  background: color-mix(in srgb, var(--ev-color, var(--turquoise)) 15%, transparent);
+}
+.day-view .habit-popover .pop-btn.danger,
+.day-view .task-popover-like .pop-btn.danger {
+  border-color: #ff4d4f; color: #ff4d4f;
+}
+.day-view .habit-popover .pop-btn.danger:hover,
+.day-view .task-popover-like .pop-btn.danger:hover {
+  background: rgba(255,77,79,.1);
+}
+
 /* Task popover */
 .day-view .task-popover-like {
   background: var(--panel-elev);
   color: var(--text);
-  border: 2px solid var(--border-strong);
+  border: 2px solid var(--ev-color, var(--border-strong));
   border-radius: 12px;
   padding: 1rem 1.2rem;
-  min-width: 18rem;
-  max-width: min(25rem, 90vw);
+  width: 100%;
+  min-width: 0;
+  max-width: none;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
 }
 
 .day-view .ep-title {
