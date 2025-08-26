@@ -2,6 +2,7 @@ import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from "re
 import "./DayView.css";
 import { toLocalISO } from "../../helpers/date.js";
 
+const API = import.meta.env.VITE_API_URL || "/api";
 const pad2 = (n) => String(n).padStart(2, "0");
 const POPOVER_W = 300;
 
@@ -54,6 +55,9 @@ export default function DayView({ date, tasks = [], habits = [], onSlotClick }) 
     setPxPerMin(hourH / 60);
   }, []);
 
+  // lokalny stan „done" (optymistyczny toggle)
+  const [doneMap, setDoneMap] = useState({});
+
   // eventy danego dnia (lokalnie)
   const events = useMemo(() => {
     const list = [];
@@ -72,11 +76,12 @@ export default function DayView({ date, tasks = [], habits = [], onSlotClick }) 
         type: "task",
         title: t.title || "Zadanie",
         description: t.description || "",
-        color: t.color || "#c84a5b",
-        startMin, endMin,
+        color: t.color || "#7aa7ff",
+        startMin, endMin, raw: t,
         rangeStr: `${minutesToHHMM(startMin)}–${minutesToHHMM(endMin)}`,
         meta: [`${minutesToHHMM(startMin)}–${minutesToHHMM(endMin)}`, `${t.duration || 60}m`],
       });
+      if (typeof t.status === "boolean") doneMap[`task-${t.id}`] ??= !!t.status;
     }
 
     // nawyki
@@ -99,46 +104,81 @@ export default function DayView({ date, tasks = [], habits = [], onSlotClick }) 
         title: h.title || "Nawyk",
         description: h.description || "",
         color: h.color || "#6fead1",
-        startMin, endMin,
+        startMin, endMin, raw: h, dateKey: dayKey,
         rangeStr: `${minutesToHHMM(startMin)}–${minutesToHHMM(endMin)}`,
         meta: [`${minutesToHHMM(startMin)}–${minutesToHHMM(endMin)}`, `${h.duration || 25}m`],
       });
     }
 
     return layoutBlocks(list);
-  }, [tasks, habits, dayKey]);
+  }, [tasks, habits, dayKey]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const hours = Array.from({ length: 24 }, (_, i) => i);
 
-  /* ===== Popover (z histerezą) ===== */
-  const [hover, setHover] = useState(null); // { rect, event }
-  const hideTimer = useRef(null);
-
+  /* ===== Popover ===== */
+  const [open, setOpen] = useState(null); // { rect, event, anchor }
+  const popRef = useRef(null);
   useEffect(() => {
-    const close = () => setHover(null);
-    const onKey = (e) => { if (e.key === "Escape") setHover(null); };
-    window.addEventListener("scroll", close, true);
-    window.addEventListener("resize", close);
-    window.addEventListener("keydown", onKey);
-    return () => {
-      window.removeEventListener("scroll", close, true);
-      window.removeEventListener("resize", close);
-      window.removeEventListener("keydown", onKey);
+    const onDown = (e) => {
+      if (!open) return;
+      const pop = popRef.current;
+      if (pop && pop.contains(e.target)) return;          // klik wewnątrz → zostaje
+      if (open.anchor?.contains?.(e.target)) return;      // klik w kafelek → zostaje
+      setOpen(null);
     };
-  }, []);
+    const onKey = (e) => { if (e.key === "Escape") setOpen(null); };
+    document.addEventListener("mousedown", onDown, true);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("mousedown", onDown, true);
+      document.removeEventListener("keydown", onKey);
+    };
+  }, [open]);
 
-  const openPopover = (e, ev) => {
-    if (hideTimer.current) { clearTimeout(hideTimer.current); hideTimer.current = null; }
-    const rect = e.currentTarget.getBoundingClientRect();
-    setHover({ rect, event: ev });
-  };
-  const armHide = () => {
-    if (hideTimer.current) clearTimeout(hideTimer.current);
-    hideTimer.current = setTimeout(() => setHover(null), 120);
-  };
-  const cancelHide = () => {
-    if (hideTimer.current) { clearTimeout(hideTimer.current); hideTimer.current = null; }
-  };
+  function openPopover(e, ev) {
+    const r = e.currentTarget.getBoundingClientRect();
+    setOpen({ rect: r, event: ev, anchor: e.currentTarget });
+  }
+
+  async function toggleEventDone(ev) {
+    const isDone = !!doneMap[ev.id];
+    try {
+      if (ev.type === "task") {
+        await fetch(`${API}/tasks/${ev.raw.id}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ status: !isDone }),
+        });
+      } else {
+        const url = `${API}/habits/${ev.raw.id}/logs/${ev.dateKey}`;
+        if (!isDone) {
+          await fetch(`${API}/habits/${ev.raw.id}/logs`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ done_on: ev.dateKey }),
+          });
+        } else {
+          await fetch(url, { method: "DELETE" });
+        }
+      }
+      setDoneMap((m) => ({ ...m, [ev.id]: !isDone }));
+      // powiadom inne widoki (np. Cele i Nawyki) że dane się zmieniły
+      window.dispatchEvent(new CustomEvent("data:changed", { detail: { kind: ev.type } }));
+    } catch (e) {
+      console.error(e);
+    }
+  }
+
+  async function removeHabit(id, title) {
+    if (!confirm(`Usunąć nawyk „${title}"?`)) return;
+    try {
+      await fetch(`${API}/habits/${id}`, { method: "DELETE" });
+      // UI – usuń wszystkie instancje tego nawyku z tygodnia
+      // (tu prosto: filtr po .raw.id przy re-renderze z propsów)
+      window.dispatchEvent(new CustomEvent("data:changed", { detail: { kind: "habit" } }));
+      setOpen(null);
+    } catch (e) { console.error(e); }
+  }
 
   return (
     <div className="day-view">
@@ -151,7 +191,11 @@ export default function DayView({ date, tasks = [], habits = [], onSlotClick }) 
       <div className="day-grid">
         {/* lewa skala godzin */}
         <div className="hours-col" aria-hidden>
-          {hours.map((h) => <div key={h} className="hour-cell" aria-hidden />)}
+          {hours.map((h) => (
+            <div key={h} className="hour-cell">
+              <span className="hour-label">{`${pad2(h)}:00`}</span>
+            </div>
+          ))}
         </div>
 
         {/* kolumna dnia */}
@@ -160,7 +204,7 @@ export default function DayView({ date, tasks = [], habits = [], onSlotClick }) 
           className="day-col"
           onDoubleClick={() => onSlotClick?.(dayKey)}
         >
-          {hours.map((h) => <div key={h} className="hour-row" aria-hidden />)}
+          {hours.map((h) => <div key={h} className="hour-cell" aria-hidden />)}
 
           {events.map((ev) => {
             const blockTopPx = Math.max(0, Math.round(pxPerMin * ev.startMin));
@@ -170,11 +214,16 @@ export default function DayView({ date, tasks = [], habits = [], onSlotClick }) 
             const blockLeftPct = ev.col * (100 / ev.colCount) + gap / 2;
 
             const kind = ev.type === "habit" ? "habit" : "task"; // normalize
+            const dur = ev.endMin - ev.startMin;
+            const sizeClass =
+              dur < 30 ? "tiny" : dur < 60 ? "small" : dur < 120 ? "normal" : "large";
+
+            const isDone = !!doneMap[ev.id];
 
             return (
               <div
                 key={ev.id}
-                className={`event-block ${kind}`}
+                className={`event-block ${kind} ${sizeClass} ${isDone ? "done" : ""}`}
                 data-kind={kind}
                 style={{
                   top: `${blockTopPx}px`,
@@ -183,14 +232,11 @@ export default function DayView({ date, tasks = [], habits = [], onSlotClick }) 
                   width: `${blockWidthPct}%`,
                   "--ev-color": ev.color, // gradient + kolor pod spodem
                 }}
-                onMouseEnter={(e) => openPopover(e, ev)}
-                onMouseLeave={armHide}
-
-                /* === A11y: klik/klawiatura jak przycisk === */
                 onClick={(e) => openPopover(e, ev)}
+                /* === A11y: klik/klawiatura jak przycisk === */
                 role="button"
                 tabIndex={0}
-                aria-label={`Zdarzenie: ${ev.title}. ${ev.rangeStr}.`}
+                aria-label={`Zdarzenie: ${ev.title}. Od ${minutesToHHMM(ev.startMin)} do ${minutesToHHMM(ev.endMin)}.`}
                 onKeyDown={(e) => {
                   if (e.key === "Enter" || e.key === " ") {
                     e.preventDefault();
@@ -198,63 +244,80 @@ export default function DayView({ date, tasks = [], habits = [], onSlotClick }) 
                   }
                 }}
               >
-                <span className="ev-time">{ev.rangeStr}</span>
-                <span className="ev-title">{ev.title}</span>
+                <button
+                  className={`ev-check ${isDone ? "checked" : ""}`}
+                  onClick={(e) => { e.stopPropagation(); toggleEventDone(ev); }}
+                  title={isDone ? "Cofnij" : "Oznacz jako zrobione"}
+                  aria-pressed={isDone}
+                  aria-label={isDone ? "Cofnij oznaczenie jako zrobione" : "Oznacz jako zrobione"}
+                />
+                <span className="ev-title" title={ev.title}>{ev.title}</span>
               </div>
             );
           })}
         </div>
       </div>
 
-      {/* Popover po prawej */}
-      {hover && (
+      {/* POPOVER (przy kafelku) */}
+      {open && (
         <div
-          className="event-popover right"
+          ref={popRef}
+          className={`event-pop ${open.event.type}`}
           role="dialog"
           aria-modal="true"
-          aria-labelledby="day-popover-title"
-          aria-describedby="day-popover-desc"
+          aria-labelledby={open.event.type === "habit" ? "habit-popover-title" : "task-popover-title"}
+          aria-describedby={open.event.type === "habit" ? "habit-popover-desc" : "task-popover-desc"}
           style={{
             position: "fixed",
-            top: hover.rect.top + hover.rect.height / 2 + window.scrollY,
+            top: open.rect.top + open.rect.height / 2 + window.scrollY,
             left: Math.min(
               window.scrollX + window.innerWidth - POPOVER_W - 8,
-              hover.rect.right + window.scrollX + 10
+              open.rect.right + window.scrollX + 10
             ),
             width: POPOVER_W,
             transform: "translateY(-50%)",
           }}
-          onMouseEnter={cancelHide}
-          onMouseLeave={armHide}
         >
-          <div id="day-popover-title" className="ep-title">{hover.event.title}</div>
-          {hover.event.description && <div id="day-popover-desc" className="ep-desc">{hover.event.description}</div>}
-          <div
-            className="popover-meta"
-            style={{
-              opacity: .85,
-              fontSize: '.9rem',
-              marginBottom: '.5rem',
-              display: 'flex',
-              gap: '.6rem',
-              flexWrap: 'wrap'
-            }}
-          >
-            {hover.event.meta?.map((m, i) => <span key={i}>{m}</span>)}
-          </div>
-          <div className="ep-actions">
-            {hover.event.type === "task" ? (
-              <>
-                <button className="pop-btn">Otwórz/Ukończ</button>
-                <button className="pop-btn danger">Usuń</button>
-              </>
-            ) : (
-              <>
-                <button className="pop-btn">Aktywuj/Wstrzymaj</button>
-                <button className="pop-btn danger">Usuń</button>
-              </>
-            )}
-          </div>
+          {open.event.type === "habit" ? (
+            /* POPoVER HABITU – 1:1 jak w „Cele i Nawyki", ale akcje: Zalicz/Cofnij + Usuń */
+            <div className="habit-popover" role="document">
+              <div className="popover-head">
+                <strong id="habit-popover-title">{open.event.title}</strong>
+                <span className="status">Nawyk</span>
+              </div>
+              <div id="habit-popover-desc" className="popover-desc">{open.event.description || "Brak opisu"}</div>
+              <div className="popover-meta">
+                <span>Godzina: {minutesToHHMM(open.event.startMin)}</span>
+                <span>Czas trwania: {open.event.endMin - open.event.startMin}m</span>
+              </div>
+              <div className="popover-actions">
+                <button type="button" className="btn small" onClick={() => toggleEventDone(open.event)}>
+                  {doneMap[open.event.id] ? "Cofnij dzisiaj" : "Zalicz dzisiaj"}
+                </button>
+                <button
+                  type="button"
+                  className="btn small danger"
+                  onClick={() => removeHabit(open.event.raw.id, open.event.title)}
+                >
+                  Usuń
+                </button>
+              </div>
+            </div>
+          ) : (
+            /* POPoVER TASKA – prosty */
+            <div className="task-popover-like" role="document">
+              <div id="task-popover-title" className="ep-title">{open.event.title}</div>
+              {open.event.description && <div id="task-popover-desc" className="ep-desc">{open.event.description}</div>}
+              <div className="ep-times">
+                {minutesToHHMM(open.event.startMin)}–{minutesToHHMM(open.event.endMin)}
+              </div>
+              <div className="ep-actions">
+                <button className="pop-btn" onClick={() => toggleEventDone(open.event)}>
+                  {doneMap[open.event.id] ? "Cofnij wykonanie" : "Oznacz jako zrobione"}
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       )}
     </div>

@@ -1,23 +1,17 @@
 @import '../../styles/variables.css';
 @import '../../styles/utilities.css';
 
-/* ===== DayView – spójny wygląd z WeekView ===== */
+/* ===== DayView ===== */
 .day-view {
   --hour-h: 30px;
   --gutter-w: 56px;
-  --grid-major: rgba(255, 255, 255, .22);
-  --grid-major-w: 2px;
-  --grid-minor: rgba(255, 255, 255, .09);
-  --grid-minor-w: 1px;
-  --grid-vert: rgba(255, 255, 255, .12);
-  --now: #e53935;
 
-  background: var(--bg);
+  /* te kolory i reszta są w variables.css, ale zostawiam zgodność nazw */
   width: var(--cal-width, min(100%, 960px));
   margin: 0 auto;
 }
 
-/* Nagłówek dnia jak w WeekView */
+/* Nagłówek dnia */
 .day-head {
   display: grid;
   place-items: center;
@@ -33,22 +27,25 @@
   margin-bottom: .6rem;
 }
 
-/* Siatka dnia: rynna godzin + kolumna z wydarzeniami */
+/* Siatka dnia: rynna godzin + kolumna eventów */
 .day-grid {
   display: grid;
   grid-template-columns: var(--gutter-w) minmax(320px, 1fr);
   background: var(--panel);
   border: 1px solid var(--border);
+  border-top: none;
+  /* żeby nie dublować linii 00:00 */
   border-radius: 12px;
   overflow: hidden;
   box-shadow: var(--shadow);
 }
 
-/* Lewa kolumna z godzinami */
+/* --- Lewa kolumna z godzinami --- */
 .day-view .hours-col {
   display: grid;
-  grid-template-rows: repeat(24, var(--hour-h)); /* Dokładnie --hour-h pikseli */
-  align-items: center;
+  grid-template-rows: repeat(24, var(--hour-h));
+  /* identyczny podział jak po prawej */
+  align-items: start;
   padding-right: .4rem;
   border-right: 1px solid var(--grid-vert);
   background: rgba(0, 0, 0, .08);
@@ -56,78 +53,261 @@
 }
 
 .day-view .hour-cell {
-  position: relative;
+  height: var(--hour-h);
   display: flex;
-  align-items: center;
+  align-items: flex-start;
+  /* kotwica = górna krawędź (czyli linia) */
   justify-content: flex-end;
   font-variant-numeric: tabular-nums;
   opacity: .9;
-  border-top: 1px solid var(--grid-major); /* Trik z WeekView - border-top */
-  padding-top: 2px;
+  border-top: var(--grid-major-w) solid var(--grid-major);
+  box-sizing: border-box;
+  padding-top: 0;
+  position: relative;
 }
 
-/* Prawa kolumna – siatka i eventy */
+.day-view .hour-label {
+  font-size: 11px;
+  color: var(--text-muted);
+  line-height: 1;
+  white-space: nowrap;
+  margin: 0 8px;
+  font-family: "Google Sans", Roboto, Arial, sans-serif;
+  font-weight: 400;
+  opacity: 0.9;
+  position: relative;
+  top: calc(-1 * var(--grid-major-w) / 2);
+  /* „przykleja" etykietę do linii */
+  z-index: 1;
+}
+
+/* --- Prawa kolumna (dzień) --- */
 .day-view .day-col {
   position: relative;
-  min-height: calc(var(--hour-h) * 24);
   display: grid;
-  grid-template-rows: repeat(24, var(--hour-h)); /* Dokładnie --hour-h pikseli */
-  /* pionowe obramowanie dnia */
+  grid-template-rows: repeat(24, var(--hour-h));
+  min-height: calc(var(--hour-h) * 24);
   box-shadow: inset 1px 0 0 var(--grid-vert);
+  background: var(--bg);
+  overflow: hidden;
 }
 
 .day-view .day-col .hour-cell {
   position: relative;
-  border-top: 1px solid var(--grid-major); /* Trik z WeekView - border-top */
-  opacity: 0.8;
+  border-top: var(--grid-major-w) solid var(--grid-major);
+  /* 00:00 … 23:00 */
+  box-sizing: border-box;
+  opacity: .8;
   pointer-events: none;
 }
 
-.day-view .day-col .hour-cell:last-child {
-  border-bottom: none;
-}
-
-/* Ukryte wypełniacze wysokości co godzinę - zastąpione przez .hour-cell */
-
-/* Bloki zdarzeń */
-.event-block {
+/* --- Bloki zdarzeń (namespacing, żeby WeekView nie wpływał) --- */
+.day-view .event-block {
   position: absolute;
-  box-sizing: border-box;
-  border-radius: 10px;
-  padding: .35rem .45rem;
-  color: #fff;
-  font-weight: 700;
-  text-shadow: 0 1px 1px rgba(0, 0, 0, .35);
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, .12) 0%, rgba(0, 0, 0, .06) 100%),
-    var(--ev-color, #c84a5b);
-  box-shadow:
-    0 4px 10px rgba(0, 0, 0, .35),
-    inset 0 0 0 1px rgba(0, 0, 0, .15);
-  border: 1px solid rgba(0, 0, 0, .15);
+  border-radius: 4px;
+  color: var(--white);
+  padding: .1rem .25rem;
+  display: flex;
+  align-items: center;
+  gap: .25rem;
+  background: var(--ev-color, #7aa7ff);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
   overflow: hidden;
-  z-index: 2;
-  isolation: isolate;
+  border-left: 3px solid var(--ev-color, #7aa7ff);
+  font-family: "Google Sans", Roboto, Arial, sans-serif;
+  font-size: 11px;
+  font-weight: 500;
 }
 
-.event-block .ev-time {
+/* Style dla nawyków - przekreślone paski */
+.day-view .event-block.habit {
+  background: var(--ev-color, #6fead1);
+  border-left: 3px solid var(--ev-color, #6fead1);
+  opacity: 0.9;
+  position: relative;
+}
+
+.day-view .event-block.habit::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: repeating-linear-gradient(
+    45deg,
+    transparent,
+    transparent 2px,
+    rgba(255, 255, 255, 0.3) 2px,
+    rgba(255, 255, 255, 0.3) 4px
+  );
+  pointer-events: none;
+  z-index: 1;
+}
+
+.day-view .event-block.habit .ev-check,
+.day-view .event-block.habit .ev-title {
+  position: relative;
+  z-index: 2;
+}
+
+/* Szybki checkbox */
+.day-view .ev-check {
+  width: 14px;
+  height: 14px;
+  border-radius: 2px;
+  border: 1px solid rgba(255, 255, 255, .8);
+  background: rgba(255, 255, 255, .2);
+  display: inline-block;
+  flex: 0 0 auto;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.day-view .ev-check:hover {
+  background: rgba(255, 255, 255, .3);
+}
+
+.day-view .ev-check.checked {
+  background: rgba(255, 255, 255, .9);
+  border-color: rgba(255, 255, 255, .9);
+}
+
+.day-view .event-block.tiny .ev-check {
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+}
+
+.day-view .event-block.small .ev-check {
+  width: 12px;
+  height: 12px;
+  border-radius: 2px;
+}
+
+/* Tytuł eventu */
+.day-view .ev-title {
+  font-weight: 500;
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex: 1 1 auto;
+  font-size: inherit;
+}
+
+.day-view .event-block .ev-time {
   font-size: .8rem;
   opacity: .9;
   margin-right: .4rem;
 }
 
-.event-block .ev-title {
+.day-view .event-block .ev-title {
   font-size: .92rem;
 }
 
-.event-block:focus-visible {
+/* Rozmiary eventów */
+.day-view .event-block.tiny {
+  font-size: 9px;
+  padding: .05rem .15rem;
+}
+
+.day-view .event-block.small {
+  font-size: 10px;
+  padding: .08rem .2rem;
+}
+
+.day-view .event-block.normal {
+  font-size: 11px;
+  padding: .1rem .25rem;
+}
+
+.day-view .event-block.large {
+  font-size: 12px;
+  padding: .12rem .3rem;
+}
+
+/* Done visuals */
+.day-view .event-block.done {
+  opacity: 0.6;
+  filter: grayscale(0.3);
+}
+
+.day-view .event-block.done .ev-title {
+  text-decoration: line-through;
+  text-decoration-thickness: 1px;
+}
+
+.day-view .event-block:focus-visible {
   outline: 2px solid var(--turquoise);
   outline-offset: 2px;
 }
 
+.day-view .event-block:hover {
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+  transform: translateY(-1px);
+  transition: all 0.2s ease;
+}
 
-/* Popover info (wspólne z WeekView) */
-.popover-meta {
+/* --- Popover styles (spójne z WeekView) --- */
+.day-view .event-pop {
+  z-index: 9999;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  backdrop-filter: blur(10px);
+}
+
+.day-view .event-pop::before {
+  content: "";
+  position: absolute;
+  left: -10px;
+  top: 50%;
+  transform: translateY(-50%);
+  border-width: 10px;
+  border-style: solid;
+  border-color: transparent var(--panel-elev) transparent transparent;
+  filter: drop-shadow(-2px 0 0 var(--border-strong));
+}
+
+/* Habit popover */
+.day-view .event-pop.habit .habit-popover {
+  position: relative;
+  min-width: 20rem;
+  max-width: min(30rem, 90vw);
+  background: var(--panel-elev);
+  color: var(--text);
+  border: 2px solid var(--border-strong);
+  border-radius: 12px;
+  padding: 1rem 1.2rem;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+}
+
+.day-view .popover-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: .35rem;
+}
+
+.day-view .popover-head strong {
+  color: var(--text);
+  font-weight: 600;
+}
+
+.day-view .popover-head .status {
+  font-size: .8rem;
+  opacity: .85;
+  color: var(--turquoise);
+  font-weight: 500;
+}
+
+.day-view .popover-desc {
+  font-size: .9rem;
+  opacity: .9;
+  margin-bottom: .4rem;
+}
+
+.day-view .popover-meta {
   display: flex;
   flex-wrap: wrap;
   gap: .35rem .6rem;
@@ -136,13 +316,96 @@
   margin-bottom: .6rem;
 }
 
-/* Czerwona linia bieżącego czasu (jeśli używana) */
-.now-line {
-  position: absolute;
-  left: 0;
-  right: 0;
-  height: 2px;
-  background: var(--now);
-  box-shadow: 0 0 0 1px var(--now);
-  z-index: 3;
+.day-view .popover-actions {
+  display: flex;
+  gap: .4rem;
+  justify-content: flex-end;
+}
+
+/* Task popover */
+.day-view .task-popover-like {
+  background: var(--panel-elev);
+  color: var(--text);
+  border: 2px solid var(--border-strong);
+  border-radius: 12px;
+  padding: 1rem 1.2rem;
+  min-width: 18rem;
+  max-width: min(25rem, 90vw);
+}
+
+.day-view .ep-title {
+  font-weight: 800;
+  margin-bottom: .25rem;
+}
+
+.day-view .ep-desc {
+  opacity: .9;
+  margin-bottom: .35rem;
+}
+
+.day-view .ep-times {
+  font-size: .85rem;
+  opacity: .85;
+  margin-bottom: .5rem;
+}
+
+.day-view .ep-actions {
+  display: flex;
+  gap: .5rem;
+  justify-content: flex-end;
+}
+
+.day-view .pop-btn {
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--white);
+  padding: .35rem .6rem;
+  border-radius: 8px;
+}
+
+.day-view .pop-btn:hover {
+  background: rgba(255, 255, 255, .06);
+}
+
+.day-view .btn {
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--white);
+  padding: .35rem .6rem;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.day-view .btn:hover {
+  background: rgba(255, 255, 255, .06);
+}
+
+.day-view .btn.small {
+  padding: .25rem .5rem;
+  font-size: .85rem;
+}
+
+.day-view .btn.danger {
+  border-color: #ff4d4f;
+  color: #ff4d4f;
+}
+
+.day-view .btn.danger:hover {
+  background: rgba(255, 77, 79, .1);
+}
+
+/* Responsive (opcjonalnie) */
+@media (max-width: 480px) {
+  .day-grid {
+    grid-template-columns: 40px minmax(280px, 1fr);
+  }
+
+  .day-view {
+    --hour-h: 25px;
+    --gutter-w: 40px;
+  }
+
+  .day-view .hour-label {
+    font-size: 10px;
+  }
 }

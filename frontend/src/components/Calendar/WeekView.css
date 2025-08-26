@@ -89,7 +89,7 @@
   position: relative;
   display: flex;
   box-sizing: border-box;
-  align-items: center;
+  align-items: flex-start; /* zmiana z center na flex-start */
   border-top: 1px solid var(--grid-major);
   opacity: 0.8;
 }
@@ -107,6 +107,7 @@
   font-weight: 400;
   opacity: 0.8;
   position: relative;
+  top: calc(-1 * var(--grid-major-w) / 2); /* dodane - przesuwa etykietę pod linię */
   z-index: 2;
 }
 
@@ -136,7 +137,7 @@
 
 
 /* now line & pin */
-.now-line {
+.week-view .now-line {
   position: absolute;
   left: var(--gutter-w);
   right: 0;
@@ -148,7 +149,7 @@
   pointer-events: none;
 }
 
-.now-pin {
+.week-view .now-pin {
   position: absolute;
   right: -4px;
   width: 6px;
@@ -162,7 +163,7 @@
 }
 
 /* ---------- Event block ---------- */
-.event-block {
+.week-view .event-block {
   position: absolute;
   border-radius: 4px;
   color: var(--white);
@@ -180,14 +181,14 @@
 }
 
 /* Style dla nawyków - przekreślone paski */
-.event-block.habit {
+.week-view .event-block.habit {
   background: var(--ev-color, #6fead1);
   border-left: 3px solid var(--ev-color, #6fead1);
   opacity: 0.9;
   position: relative;
 }
 
-.event-block.habit::before {
+.week-view .event-block.habit::before {
   content: '';
   position: absolute;
   top: 0;
@@ -205,14 +206,14 @@
   z-index: 1;
 }
 
-.event-block.habit .ev-check,
-.event-block.habit .ev-title {
+.week-view .event-block.habit .ev-check,
+.week-view .event-block.habit .ev-title {
   position: relative;
   z-index: 2;
 }
 
 /* szybki checkbox */
-.ev-check {
+.week-view .ev-check {
   width: 14px;
   height: 14px;
   border-radius: 2px;
@@ -224,29 +225,29 @@
   transition: all 0.2s ease;
 }
 
-.ev-check:hover {
+.week-view .ev-check:hover {
   background: rgba(255, 255, 255, .3);
 }
 
-.ev-check.checked {
+.week-view .ev-check.checked {
   background: rgba(255, 255, 255, .9);
   border-color: rgba(255, 255, 255, .9);
 }
 
-.event-block.tiny .ev-check {
+.week-view .event-block.tiny .ev-check {
   width: 10px;
   height: 10px;
   border-radius: 2px;
 }
 
-.event-block.small .ev-check {
+.week-view .event-block.small .ev-check {
   width: 12px;
   height: 12px;
   border-radius: 2px;
 }
 
 /* tytuł eventu */
-.ev-title {
+.week-view .ev-title {
   font-weight: 500;
   line-height: 1.2;
   white-space: nowrap;
@@ -256,43 +257,43 @@
   font-size: inherit;
 }
 
-.event-block.tiny {
+.week-view .event-block.tiny {
   font-size: 9px;
   padding: .05rem .15rem;
 }
 
-.event-block.small {
+.week-view .event-block.small {
   font-size: 10px;
   padding: .08rem .2rem;
 }
 
-.event-block.normal {
+.week-view .event-block.normal {
   font-size: 11px;
   padding: .1rem .25rem;
 }
 
-.event-block.large {
+.week-view .event-block.large {
   font-size: 12px;
   padding: .12rem .3rem;
 }
 
 /* Done visuals */
-.event-block.done {
+.week-view .event-block.done {
   opacity: 0.6;
   filter: grayscale(0.3);
 }
 
-.event-block.done .ev-title {
+.week-view .event-block.done .ev-title {
   text-decoration: line-through;
   text-decoration-thickness: 1px;
 }
 
-.event-block:focus-visible {
+.week-view .event-block:focus-visible {
   outline: 2px solid var(--turquoise);
   outline-offset: 2px;
 }
 
-.event-block:hover {
+.week-view .event-block:hover {
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
   transform: translateY(-1px);
   transition: all 0.2s ease;
@@ -300,29 +301,29 @@
 
 /* ---------- Popovery ---------- */
 /* Task (zostaje prosty) */
-.task-popover-like .ep-title {
+.week-view .task-popover-like .ep-title {
   font-weight: 800;
   margin-bottom: .25rem;
 }
 
-.task-popover-like .ep-desc {
+.week-view .task-popover-like .ep-desc {
   opacity: .9;
   margin-bottom: .35rem;
 }
 
-.task-popover-like .ep-times {
+.week-view .task-popover-like .ep-times {
   font-size: .85rem;
   opacity: .85;
   margin-bottom: .5rem;
 }
 
-.task-popover-like .ep-actions {
+.week-view .task-popover-like .ep-actions {
   display: flex;
   gap: .5rem;
   justify-content: flex-end;
 }
 
-.pop-btn {
+.week-view .pop-btn {
   border: 1px solid var(--border);
   background: transparent;
   color: var(--white);
@@ -330,12 +331,12 @@
   border-radius: 8px;
 }
 
-.pop-btn:hover {
+.week-view .pop-btn:hover {
   background: rgba(255, 255, 255, .06);
 }
 
-/* Habit – styl jak w „Cele i Nawyki” */
-.event-pop.habit .habit-popover {
+/* Habit – styl jak w „Cele i Nawyki" */
+.week-view .event-pop.habit .habit-popover {
   position: relative;
   min-width: 20rem;
   max-width: min(30rem, 90vw);
@@ -348,7 +349,7 @@
 }
 
 /* Task popover */
-.task-popover-like {
+.week-view .task-popover-like {
   background: var(--panel-elev);
   color: var(--text);
   border: 2px solid var(--border-strong);
@@ -358,14 +359,14 @@
   max-width: min(25rem, 90vw);
 }
 
-.event-pop {
+.week-view .event-pop {
   z-index: 9999;
   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.1);
   border-radius: 12px;
   backdrop-filter: blur(10px);
 }
 
-.event-pop::before {
+.week-view .event-pop::before {
   /* grot po lewej */
   content: "";
   position: absolute;
@@ -378,32 +379,32 @@
   filter: drop-shadow(-2px 0 0 var(--border-strong));
 }
 
-.popover-head {
+.week-view .popover-head {
   display: flex;
   align-items: center;
   justify-content: space-between;
   margin-bottom: .35rem;
 }
 
-.popover-head strong {
+.week-view .popover-head strong {
   color: var(--text);
   font-weight: 600;
 }
 
-.popover-head .status {
+.week-view .popover-head .status {
   font-size: .8rem;
   opacity: .85;
   color: var(--turquoise);
   font-weight: 500;
 }
 
-.popover-desc {
+.week-view .popover-desc {
   font-size: .9rem;
   opacity: .9;
   margin-bottom: .4rem;
 }
 
-.popover-meta {
+.week-view .popover-meta {
   display: flex;
   flex-wrap: wrap;
   gap: .35rem .6rem;
@@ -412,7 +413,7 @@
   margin-bottom: .6rem;
 }
 
-.popover-actions {
+.week-view .popover-actions {
   display: flex;
   gap: .4rem;
   justify-content: flex-end;
