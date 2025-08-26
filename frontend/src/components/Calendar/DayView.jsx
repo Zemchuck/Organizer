@@ -151,7 +151,7 @@ export default function DayView({ date, tasks = [], habits = [], onSlotClick }) 
       <div className="day-grid">
         {/* lewa skala godzin */}
         <div className="hours-col" aria-hidden>
-          {hours.map((h) => <div key={h} className="hour-cell">{pad2(h)}:00</div>)}
+          {hours.map((h) => <div key={h} className="hour-cell" aria-hidden />)}
         </div>
 
         {/* kolumna dnia */}

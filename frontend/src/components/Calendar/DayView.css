@@ -45,43 +45,45 @@
 }
 
 /* Lewa kolumna z godzinami */
-.hours-col {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
+.day-view .hours-col {
+  display: grid;
+  grid-template-rows: repeat(24, var(--hour-h)); /* Dokładnie --hour-h pikseli */
+  align-items: center;
   padding-right: .4rem;
   border-right: 1px solid var(--grid-vert);
   background: rgba(0, 0, 0, .08);
+  min-height: calc(var(--hour-h) * 24);
 }
 
-.hour-cell {
-  height: var(--hour-h);
+.day-view .hour-cell {
+  position: relative;
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: flex-end;
   font-variant-numeric: tabular-nums;
   opacity: .9;
+  border-top: 1px solid var(--grid-major); /* Trik z WeekView - border-top */
   padding-top: 2px;
 }
 
 /* Prawa kolumna – siatka i eventy */
-.day-col {
+.day-view .day-col {
   position: relative;
   min-height: calc(var(--hour-h) * 24);
   display: grid;
-  grid-template-rows: repeat(24, 1fr);
+  grid-template-rows: repeat(24, var(--hour-h)); /* Dokładnie --hour-h pikseli */
   /* pionowe obramowanie dnia */
   box-shadow: inset 1px 0 0 var(--grid-vert);
 }
 
-.day-col .hour-cell {
+.day-view .day-col .hour-cell {
   position: relative;
-  border-bottom: 1px solid var(--grid-major);
+  border-top: 1px solid var(--grid-major); /* Trik z WeekView - border-top */
   opacity: 0.8;
   pointer-events: none;
 }
 
-.day-col .hour-cell:last-child {
+.day-view .day-col .hour-cell:last-child {
   border-bottom: none;
 }
 
