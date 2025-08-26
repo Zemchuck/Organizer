@@ -120,15 +120,12 @@ export default function HabitForm({ goalId, onCreated, onCancel }) {
 
         <div className="form-group">
           <label>Kolor:</label>
-          <div className="color-inline">
-            <input
-              type="color"
-              value={state.color}
-              onChange={(e) => setState({ ...state, color: e.target.value })}
-              title="Wybierz kolor"
-            />
-            <span className="color-preview" style={{ background: state.color }} aria-hidden />
-          </div>
+          <input
+            type="color"
+            value={state.color}
+            onChange={(e) => setState({ ...state, color: e.target.value })}
+            title="Wybierz kolor"
+          />
         </div>
       </div>
 

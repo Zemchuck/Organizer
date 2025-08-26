@@ -60,8 +60,10 @@
   transition: background .15s, border-color .15s, transform .05s;
 }
 .dow-btn.active {
-  background: rgba(255,255,255,.1);
-  border-color: rgba(255,255,255,.35);
+  background: linear-gradient(135deg, var(--purple), var(--turquoise));
+  border-color: transparent;
+  color: var(--graphite);
+  font-weight: 700;
 }
 .dow-btn:active { transform: scale(.98); }
 

@@ -6,7 +6,7 @@ const THEMES = [
   { value: "neon",  label: "⚡ Neon" },
 ];
 
-const STORAGE_KEY = "app_theme";
+const STORAGE_KEY = "theme";
 
 export default function ThemeToggle({ className = "" }) {
   const [theme, setTheme] = useState("dark"); // default

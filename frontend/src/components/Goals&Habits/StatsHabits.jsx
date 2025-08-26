@@ -52,6 +52,12 @@ function HabitPopover({ habit, progress }) {
   const chipBg = `rgba(${rgb.r},${rgb.g},${rgb.b},0.15)`;
   const chipBorder = `rgba(${rgb.r},${rgb.g},${rgb.b},0.45)`;
 
+  // Konwersja dni tygodnia na czytelne nazwy
+  const dayNames = ["Pn", "Wt", "Śr", "Cz", "Pt", "So", "Nd"];
+  const repeatDaysText = habit?.repeat_days?.length > 0 
+    ? habit.repeat_days.map(day => dayNames[day]).join(", ")
+    : "Brak dni";
+
   const style = {
     position: "absolute",
     top: "calc(100% + 8px)",
@@ -100,8 +106,8 @@ function HabitPopover({ habit, progress }) {
         <span style={badgeStyle} title="Ciąg kolejnych dni">
           📆 Ciąg: {pr.streak} d
         </span>
-        <span style={badgeStyle} title="Kolor nawyku">
-          🎨 {habit?.color || "#—"}
+        <span style={badgeStyle} title="Dni powtarzania">
+          📅 {repeatDaysText}
         </span>
       </div>
     </div>

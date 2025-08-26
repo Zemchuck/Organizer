@@ -2,6 +2,7 @@
 @import './styles/variables.css';
 @import './styles/utilities.css';
 @import './styles/typography.css';
+@import './styles/responsive.css';
 
 /* --- Reset/normalize (lekko) --- */
 *,
@@ -120,6 +121,24 @@ a:hover { text-decoration: underline; }
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
+  border-radius: 0 0 14px 14px;
+  font-family: "Oxanium", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  font-weight: 700;
+}
+
+.header-content {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex: 1;
+}
+
+.app-title {
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  color: var(--text);
 }
 
 .app-nav {
@@ -163,21 +182,18 @@ a:hover { text-decoration: underline; }
   padding: .5rem .7rem;
 }
 
-/* Force DARK THEME (light theme usunięty) */
-:root,
-:root[data-theme="dark"],
-:root[data-theme="light"] {
+/* Theme system - dynamic color scheme */
+:root {
   color-scheme: dark;
-  /* core tokens used w komponentach */
-  --bg: #0f1318;
-  --panel: #161b22;
-  --panel-elev: #1c222b;
-  --border: rgba(255,255,255,.14);
-  --border-strong: rgba(255,255,255,.28);
-  --white: #e6f1ff;
-  --muted: rgba(255,255,255,.6);
-  --shadow: 0 4px 16px rgba(0, 0, 0, .35);
-  --accent: #2dd4bf;
+}
+
+:root[data-theme="light"] {
+  color-scheme: light;
+}
+
+:root[data-theme="dark"],
+:root[data-theme="neon"] {
+  color-scheme: dark;
 }
 
 /* === Theme toggle (UI) === */
@@ -195,7 +211,84 @@ a:hover { text-decoration: underline; }
   border-color: var(--border-strong);
 }
 
-/* ukryj opcję jasnego motywu w select */
-.theme-toggle option[value="light"] {
-  display: none;
+/* Theme toggle styling */
+.theme-toggle select {
+  height: 34px;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--text);
+  border: 1px solid var(--border);
+  padding: 0 .6rem;
+  font-size: 14px;
+}
+
+.theme-toggle select:hover {
+  background: rgba(255, 255, 255, .06);
+  border-color: var(--border-strong);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .app-header {
+    padding: .5rem .7rem;
+    flex-direction: column;
+    gap: .5rem;
+  }
+  
+  .app-nav {
+    order: 2;
+    width: 100%;
+    justify-content: center;
+  }
+  
+  .theme-toggle {
+    order: 1;
+    align-self: flex-end;
+  }
+  
+  .app-content {
+    padding: .7rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .app-header {
+    padding: .4rem .5rem;
+  }
+  
+  .nav-link {
+    padding: .35rem .5rem;
+    font-size: 14px;
+  }
+  
+  .app-content {
+    padding: .5rem;
+  }
+  
+  .app-title {
+    font-size: 16px;
+  }
+}
+
+/* Additional responsive improvements */
+@media (max-width: 768px) {
+  .hint {
+    font-size: 14px;
+  }
+  
+  .form-error {
+    font-size: 14px;
+    padding: .4rem .6rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .hint {
+    font-size: 13px;
+  }
+  
+  .form-error {
+    font-size: 13px;
+    padding: .3rem .5rem;
+  }
 }

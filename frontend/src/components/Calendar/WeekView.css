@@ -1,20 +1,6 @@
 /* ---------- Ustawienia ---------- */
 .week-view {
-  --hour-h: 40px; /* zwiększone z 30px */
-  /* wysokość 1h */
-  --gutter-w: 70px; /* zwiększone z 56px */
-  /* szersza rynna */
-  --grid-major: rgba(255, 255, 255, .22);
-  /* linie pełnej godziny */
-  --grid-major-w: 2px;
-  --grid-minor: rgba(255, 255, 255, .09);
-  /* półgodziny */
-  --grid-minor-w: 1px;
-  --grid-vert: rgba(255, 255, 255, .12);
-  /* pionowe separatory dni */
-  --now: #e53935;
-
-  width: var(--cal-width, min(100%, 1200px)); /* zwiększone z 960px */
+  width: var(--cal-width, min(100%, 960px));
   margin: 0 auto;
 
   /* === NOWE: przewijanie poziome na wąskich ekranach === */
@@ -28,20 +14,21 @@
 /* ---------- Head ---------- */
 .week-head {
   display: grid;
-  grid-template-columns: var(--gutter-w) repeat(7, minmax(150px, 1fr)); /* przywracam poprzednią wersję */
+  grid-template-columns: var(--gutter-w) repeat(7, minmax(120px, 1fr));
   background: var(--panel);
   border: 2px solid var(--border);
-
-  /* === NOWE: szerokość treści wymusza poziomy scroll kontenera === */
-  min-width: 1200px; /* zwiększone z 960px */
+  min-width: 800px;
 }
 
 .head-cell {
-  display: grid;
-  place-items: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
   gap: .15rem;
   padding: .45rem 0;
   border-right: 1px solid var(--border);
+  background: var(--panel);
 }
 
 .head-cell.gutter {
@@ -54,20 +41,29 @@
 }
 
 .head-cell .wd {
-  font-family: "Oxanium", sans-serif;
-  font-weight: 800;
-  color: var(--white);
+  font-family: "Google Sans", Roboto, Arial, sans-serif;
+  font-weight: 500;
+  color: var(--text-muted);
   text-transform: capitalize;
+  font-size: 12px;
 }
 
 .head-cell .dm {
-  font-weight: 700;
-  color: var(--turquoise);
+  font-family: "Google Sans", Roboto, Arial, sans-serif;
+  font-weight: 400;
+  color: var(--text);
+  font-size: 22px;
+  line-height: 1;
 }
 
 .head-cell.today {
-  background: linear-gradient(135deg, rgba(111, 234, 209, .9), rgba(5, 193, 155, .84));
-  box-shadow: inset 0 -1px 0 var(--border);
+  background: linear-gradient(135deg, rgba(111, 234, 209, .15), rgba(5, 193, 155, .12));
+  border-bottom: 2px solid var(--turquoise);
+}
+
+.head-cell.today .dm {
+  color: var(--turquoise);
+  font-weight: 500;
 }
 
 /* ---------- Grid ---------- */
@@ -75,74 +71,69 @@
   position: relative;
   display: grid;
   margin-top: var(--week-gap, 10px);
-  grid-template-columns: var(--gutter-w) repeat(7, minmax(150px, 1fr)); /* przywracam poprzednią wersję */
+  grid-template-columns: var(--gutter-w) repeat(7, minmax(120px, 1fr));
   border: 1px solid var(--border);
-  border-left: none;
-  border-top-color: var(--grid-major);
-  border-top-width: var(--grid-major-w);
-  border-bottom: none;
-
-  /* === NOWE: tak jak nagłówek, aby scrollowały się razem === */
-  min-width: 1200px; /* zwiększone z 960px */
+  min-width: 800px;
 }
 
-/* lewa kolumna z godzinami: same linie + overlay z etykietami */
+/* lewa kolumna z godzinami - jak w Google Calendar */
 .hours-col {
-  position: relative;
   border-right: 1px solid var(--border);
-  background:
-    /* pełne godziny */
-    repeating-linear-gradient(to bottom,
-      transparent,
-      transparent calc(var(--hour-h) - var(--grid-major-w)),
-      var(--grid-major) calc(var(--hour-h) - var(--grid-major-w)),
-      var(--grid-major) var(--hour-h));
+  background: var(--panel);
+  display: grid;
+  grid-template-rows: repeat(24, 1fr);
+  min-height: calc(var(--hour-h) * 24);
 }
 
-.hour-row {
-  height: var(--hour-h);
+.hour-cell {
+  position: relative;
+  display: flex;
+  box-sizing: border-box;
+  align-items: center;
+  border-top: 1px solid var(--grid-major);
+  opacity: 0.8;
 }
 
-/* etykiety godzin „przy linii" */
-.hour-labels {
-  position: absolute;
-  inset: 0 0 0 0;
-  pointer-events: none;
-}
-
-.hour-label-el {
-  position: absolute;
-  left: 0px;
-  transform: translateY(-50%);
-
-  /* środek etykiety na linii */
-}
 
 .hour-label {
-  display: inline-block;
-  font-size: 2.5rem; /* zwiększone z 2rem */
+  font-size: 11px;
   font-variant-numeric: tabular-nums;
-  color: var(--gray);
-  opacity: .9;
+  color: var(--text-muted);
+  line-height: 1;
+  white-space: nowrap;
+  margin-left: 8px;
+  margin-right: 8px;
+  font-family: "Google Sans", Roboto, Arial, sans-serif;
+  font-weight: 400;
+  opacity: 0.8;
+  position: relative;
+  z-index: 2;
+}
+
+.week-view .hour-line {
+  /* Linie są teraz rysowane przez border-top na .hour-cell */
+  display: none;
 }
 
 /* kolumny dni */
 .day-col {
   position: relative;
-  min-height: calc(var(--hour-h) * 25); /* zmienione z 24 na 25 dla 0-24 godzin */
+  min-height: calc(var(--hour-h) * 24);
   border-right: 1px solid var(--grid-vert);
-  background:
-    repeating-linear-gradient(to bottom,
-      transparent,
-      transparent calc(var(--hour-h) - var(--grid-major-w)),
-      var(--grid-major) calc(var(--hour-h) - var(--grid-major-w)),
-      var(--grid-major) var(--hour-h));
+  background: var(--bg);
   overflow: hidden;
+  display: grid;
+  grid-template-rows: repeat(24, 1fr);
 }
 
-.day-col:last-child {
-  border-right: none;
+.day-col .hour-cell {
+  background: transparent;
+  position: relative;
+  box-sizing: border-box;
+  border-top: 1px solid var(--grid-major);
+  opacity: 0.8;
 }
+
 
 /* now line & pin */
 .now-line {
@@ -150,8 +141,8 @@
   left: var(--gutter-w);
   right: 0;
   height: 2px;
-  background: var(--turquoise);
-  box-shadow: 0 0 0 1px var(--turquoise);
+  background: var(--now);
+  box-shadow: 0 0 4px rgba(255, 77, 79, 0.4);
   transform: translateY(-1px);
   z-index: 3;
   pointer-events: none;
@@ -159,12 +150,12 @@
 
 .now-pin {
   position: absolute;
-  right: -5px;
-  width: 8px;
-  height: 8px;
+  right: -4px;
+  width: 6px;
+  height: 6px;
   border-radius: 50%;
-  background: var(--turquoise);
-  box-shadow: 0 0 0 2px rgba(6, 203, 238, .35);
+  background: var(--now);
+  box-shadow: 0 0 0 2px var(--bg), 0 0 4px rgba(255, 77, 79, 0.6);
   transform: translateY(-50%);
   z-index: 4;
   pointer-events: none;
@@ -173,30 +164,27 @@
 /* ---------- Event block ---------- */
 .event-block {
   position: absolute;
-  border-radius: 8px;
+  border-radius: 4px;
   color: var(--white);
-  padding: .15rem .35rem;
+  padding: .1rem .25rem;
   display: flex;
   align-items: center;
-  gap: .35rem;
-  background: linear-gradient(180deg, rgba(255, 255, 255, .10), rgba(0, 0, 0, .05)), var(--ev-color, #7aa7ff);
-  box-shadow: 0 4px 10px rgba(0, 0, 0, .35), inset 0 0 0 1px rgba(0, 0, 0, .15);
+  gap: .25rem;
+  background: var(--ev-color, #7aa7ff);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
   overflow: hidden;
+  border-left: 3px solid var(--ev-color, #7aa7ff);
+  font-family: "Google Sans", Roboto, Arial, sans-serif;
+  font-size: 11px;
+  font-weight: 500;
 }
 
-/* „czystsze" kafle Habit – bez pasków, bez agresywnego gradientu */
+/* Style dla nawyków - przekreślone paski */
 .event-block.habit {
-  background: linear-gradient(135deg, 
-    rgba(255, 255, 255, 0.15) 0%, 
-    var(--ev-color, #6fead1) 30%, 
-    rgba(0, 0, 0, 0.1) 100%
-  );
-  box-shadow: 
-    0 4px 15px rgba(0, 0, 0, 0.3), 
-    inset 0 0 0 1px rgba(255, 255, 255, 0.2),
-    0 0 20px rgba(111, 234, 209, 0.3);
+  background: var(--ev-color, #6fead1);
+  border-left: 3px solid var(--ev-color, #6fead1);
+  opacity: 0.9;
   position: relative;
-  overflow: hidden;
 }
 
 .event-block.habit::before {
@@ -206,96 +194,108 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: linear-gradient(45deg, 
-    transparent 0%, 
-    rgba(255, 255, 255, 0.1) 50%, 
-    transparent 100%
+  background: repeating-linear-gradient(
+    45deg,
+    transparent,
+    transparent 2px,
+    rgba(255, 255, 255, 0.3) 2px,
+    rgba(255, 255, 255, 0.3) 4px
   );
   pointer-events: none;
+  z-index: 1;
 }
 
-.event-block.habit::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 3px;
-  height: 100%;
-  background: linear-gradient(to bottom, 
-    rgba(255, 255, 255, 0.8), 
-    rgba(255, 255, 255, 0.3)
-  );
-  border-radius: 2px;
+.event-block.habit .ev-check,
+.event-block.habit .ev-title {
+  position: relative;
+  z-index: 2;
 }
 
 /* szybki checkbox */
 .ev-check {
-  width: 16px;
-  height: 16px;
-  border-radius: 4px;
-  border: 1px solid rgba(255, 255, 255, .7);
-  background: rgba(0, 0, 0, .12);
+  width: 14px;
+  height: 14px;
+  border-radius: 2px;
+  border: 1px solid rgba(255, 255, 255, .8);
+  background: rgba(255, 255, 255, .2);
   display: inline-block;
   flex: 0 0 auto;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.ev-check:hover {
+  background: rgba(255, 255, 255, .3);
 }
 
 .ev-check.checked {
-  background: rgba(0, 0, 0, .25);
-  box-shadow: inset 0 0 0 2px rgba(255, 255, 255, .9);
+  background: rgba(255, 255, 255, .9);
+  border-color: rgba(255, 255, 255, .9);
 }
 
 .event-block.tiny .ev-check {
-  width: 12px;
-  height: 12px;
-  border-radius: 3px;
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
 }
 
 .event-block.small .ev-check {
-  width: 14px;
-  height: 14px;
-  border-radius: 3px;
+  width: 12px;
+  height: 12px;
+  border-radius: 2px;
 }
 
-/* zamiast godziny – tytuł z prostym skalowaniem */
+/* tytuł eventu */
 .ev-title {
-  font-weight: 800;
-  line-height: 1.1;
+  font-weight: 500;
+  line-height: 1.2;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
   flex: 1 1 auto;
+  font-size: inherit;
 }
 
-.event-block.tiny .ev-title {
+.event-block.tiny {
+  font-size: 9px;
+  padding: .05rem .15rem;
+}
+
+.event-block.small {
   font-size: 10px;
+  padding: .08rem .2rem;
 }
 
-.event-block.small .ev-title {
+.event-block.normal {
   font-size: 11px;
+  padding: .1rem .25rem;
 }
 
-.event-block.normal .ev-title {
+.event-block.large {
   font-size: 12px;
-}
-
-.event-block.large .ev-title {
-  font-size: 13px;
+  padding: .12rem .3rem;
 }
 
 /* Done visuals */
 .event-block.done {
-  filter: saturate(.85);
-  opacity: .9;
+  opacity: 0.6;
+  filter: grayscale(0.3);
 }
 
 .event-block.done .ev-title {
   text-decoration: line-through;
-  opacity: .9;
+  text-decoration-thickness: 1px;
 }
 
 .event-block:focus-visible {
   outline: 2px solid var(--turquoise);
   outline-offset: 2px;
+}
+
+.event-block:hover {
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+  transform: translateY(-1px);
+  transition: all 0.2s ease;
 }
 
 /* ---------- Popovery ---------- */
@@ -337,31 +337,45 @@
 /* Habit – styl jak w „Cele i Nawyki” */
 .event-pop.habit .habit-popover {
   position: relative;
+  min-width: 20rem;
+  max-width: min(30rem, 90vw);
+  background: var(--panel-elev);
+  color: var(--text);
+  border: 2px solid var(--border-strong);
+  border-radius: 12px;
+  padding: 1rem 1.2rem;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+}
+
+/* Task popover */
+.task-popover-like {
+  background: var(--panel-elev);
+  color: var(--text);
+  border: 2px solid var(--border-strong);
+  border-radius: 12px;
+  padding: 1rem 1.2rem;
   min-width: 18rem;
-  max-width: min(28rem, 90vw);
-  background: var(--surface-3, var(--panel));
-  color: var(--white);
-  border: 1px solid var(--border-strong);
-  border-radius: .7rem;
-  padding: .7rem .8rem;
-  box-shadow: 0 12px 24px rgba(0, 0, 0, .35);
+  max-width: min(25rem, 90vw);
 }
 
 .event-pop {
   z-index: 9999;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  backdrop-filter: blur(10px);
 }
 
 .event-pop::before {
   /* grot po lewej */
   content: "";
   position: absolute;
-  left: -8px;
+  left: -10px;
   top: 50%;
   transform: translateY(-50%);
-  border-width: 8px;
+  border-width: 10px;
   border-style: solid;
-  border-color: transparent var(--panel) transparent transparent;
-  filter: drop-shadow(-1px 0 0 var(--border));
+  border-color: transparent var(--panel-elev) transparent transparent;
+  filter: drop-shadow(-2px 0 0 var(--border-strong));
 }
 
 .popover-head {
@@ -372,13 +386,15 @@
 }
 
 .popover-head strong {
-  color: var(--white);
+  color: var(--text);
+  font-weight: 600;
 }
 
 .popover-head .status {
   font-size: .8rem;
   opacity: .85;
   color: var(--turquoise);
+  font-weight: 500;
 }
 
 .popover-desc {
@@ -400,4 +416,138 @@
   display: flex;
   gap: .4rem;
   justify-content: flex-end;
+}
+
+/* ---------- Responsive Design ---------- */
+@media (max-width: 480px) {
+  .week-view {
+    width: 100%;
+    margin: 0;
+  }
+  
+  .week-head,
+  .week-grid {
+    min-width: 600px;
+    grid-template-columns: var(--gutter-w) repeat(7, minmax(80px, 1fr));
+  }
+  
+  .head-cell {
+    padding: .3rem 0;
+  }
+  
+  .head-cell .wd {
+    font-size: 12px;
+  }
+  
+  .head-cell .dm {
+    font-size: 11px;
+  }
+  
+  .hour-label {
+    font-size: 10px;
+  }
+  
+  .hour-cell {
+    padding-right: 4px;
+  }
+  
+  .hour-label {
+    margin-left: 4px;
+    margin-right: 4px;
+  }
+  
+  .event-block {
+    padding: .1rem .2rem;
+    gap: .2rem;
+  }
+  
+  .ev-title {
+    font-size: 10px !important;
+  }
+  
+  .ev-check {
+    width: 12px;
+    height: 12px;
+  }
+}
+
+@media (min-width: 481px) and (max-width: 768px) {
+  .week-head,
+  .week-grid {
+    min-width: 700px;
+    grid-template-columns: var(--gutter-w) repeat(7, minmax(100px, 1fr));
+  }
+  
+  .head-cell {
+    padding: .4rem 0;
+  }
+  
+  .head-cell .wd {
+    font-size: 13px;
+  }
+  
+  .head-cell .dm {
+    font-size: 12px;
+  }
+  
+  .hour-label {
+    font-size: 11px;
+  }
+  
+  .hour-cell {
+    padding-right: 6px;
+  }
+  
+  .hour-label {
+    margin-left: 6px;
+    margin-right: 6px;
+  }
+  
+  .event-block {
+    padding: .12rem .25rem;
+    gap: .25rem;
+  }
+  
+  .ev-title {
+    font-size: 11px !important;
+  }
+  
+  .ev-check {
+    width: 13px;
+    height: 13px;
+  }
+}
+
+@media (min-width: 769px) and (max-width: 1024px) {
+  .week-head,
+  .week-grid {
+    min-width: 750px;
+    grid-template-columns: var(--gutter-w) repeat(7, minmax(110px, 1fr));
+  }
+}
+
+/* Responsive popovers */
+@media (max-width: 768px) {
+  .event-pop {
+    position: fixed !important;
+    top: 50% !important;
+    left: 50% !important;
+    transform: translate(-50%, -50%) !important;
+    width: min(90vw, 320px) !important;
+    max-width: none !important;
+  }
+  
+  .event-pop::before {
+    display: none;
+  }
+  
+  .event-pop.habit .habit-popover {
+    min-width: auto;
+    max-width: none;
+  }
+  
+  .task-popover-like {
+    min-width: auto;
+    max-width: none;
+  }
 }

@@ -140,7 +140,7 @@ export default function WeekView({ weekStart, tasks = [], habits = [], onSlotCli
   const todayKey = toLocalISO(today);
   const nowPosPct = ((today.getHours() * 60 + today.getMinutes()) / (24 * 60)) * 100;
 
-  const hours = Array.from({ length: 25 }, (_, i) => i); // 0-24 (25 godzin)
+  const hours = Array.from({ length: 24 }, (_, i) => i); // 0-23 (24 godziny)
 
   function openPopover(e, ev) {
     const r = e.currentTarget.getBoundingClientRect();
@@ -209,17 +209,13 @@ export default function WeekView({ weekStart, tasks = [], habits = [], onSlotCli
 
       {/* SIATKA */}
       <div className="week-grid">
-        {/* lewa kolumna – tylko linie; etykiety dokładnie przy liniach */}
-        <div className="hours-col" aria-hidden>
-          {hours.map((h) => <div key={h} className="hour-row" />)}
-          {/* overlay z etykietami „przy kresce” */}
-          <div className="hour-labels">
-            {hours.map((h) => (
-              <div key={h} className="hour-label-el" style={{ top: `${(h / 24) * 100}%` }}>
-                <span className="hour-label">{h === 24 ? "24:00" : `${pad2(h)}:00`}</span>
-              </div>
-            ))}
-          </div>
+        {/* lewa kolumna z godzinami - jak w Google Calendar */}
+        <div className="hours-col">
+          {hours.map((h) => (
+            <div key={h} className="hour-cell">
+              <span className="hour-label">{`${pad2(h)}:00`}</span>
+            </div>
+          ))}
         </div>
 
         {days.map((d) => {
@@ -228,9 +224,12 @@ export default function WeekView({ weekStart, tasks = [], habits = [], onSlotCli
           const isToday = key === todayKey;
           return (
             <div key={key} className="day-col" onDoubleClick={() => onSlotClick?.(key)}>
-              {hours.map((h) => <div key={h} className="hour-row" aria-hidden />)}
+              {hours.map((h) => (
+                <div key={h} className="hour-cell">
+                </div>
+              ))}
 
-              {/* „teraz” w bieżącym dniu */}
+              {/* „teraz" w bieżącym dniu */}
               {isToday && <div className="now-pin" style={{ top: `${nowPosPct}%` }} />}
 
               {events.map((ev) => {
