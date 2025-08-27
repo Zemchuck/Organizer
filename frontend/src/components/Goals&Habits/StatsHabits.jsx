@@ -125,6 +125,7 @@ export default function StatsHabits() {
   const [showGoalForm, setShowGoalForm] = useState(false);
   const [showDeleteGoalForm, setShowDeleteGoalForm] = useState(false);
   const [goalToDelete, setGoalToDelete] = useState(null);
+  const [showHints, setShowHints] = useState(false);
 
   const [openFormFor, setOpenFormFor] = useState(null);          // goalId -> show HabitForm
   const [openDeleteForGoal, setOpenDeleteForGoal] = useState(null);
@@ -210,16 +211,19 @@ export default function StatsHabits() {
 
   return (
     <div className="stats-habits">
-      <header className="panel-head">
-        <div className="panel-title">
-          <h2>Nawyki i cele</h2>
-          <p className="panel-sub">Zarządzaj celami i nawykami, śledź serię tygodniową.</p>
-        </div>
-        <div className="stats">
-          <div>Nawyki&nbsp;<strong>{totalHabits}</strong></div>
-          <div>Cele&nbsp;<strong>{totalGoals}</strong></div>
+      <header className="goals-panel-head">
+        <div className="goals-panel-title">
+          <h2>Cele & Nawyki</h2>
         </div>
         <div className="head-actions">
+          <button
+            type="button"
+            className="btn small"
+            onClick={() => setShowHints(!showHints)}
+            title="Pokaż wskazówki"
+          >
+            ℹ️
+          </button>
           <button
             type="button"
             className="btn small"
@@ -236,11 +240,42 @@ export default function StatsHabits() {
           >
             {showDeleteGoalForm ? "✕ Anuluj" : "🗑 Usuń cel"}
           </button>
-          <button type="button" className="btn small" onClick={loadAll} disabled={loading}>
-            {loading ? "Odświeżanie…" : "⟳ Odśwież"}
-          </button>
         </div>
       </header>
+
+      {showHints && (
+        <div className="goals-hints-popover">
+          <div className="hints-intro">Formułując cel skup się na wyniku lub tożsamości.</div>
+          <div className="hints-grid">
+            <div className="hint-column">
+              <h4>Wynik - Jak sformułować cel SMART?</h4>
+              <ul>
+                <li><b>S</b> – Specific: Cel musi być konkretny.</li>
+                <li><b>M</b> – Measurable: Powinien dać się zmierzyć.</li>
+                <li><b>A</b> – Achievable: Musi być realistyczny.</li>
+                <li><b>R</b> – Relevant: Powinien być istotny dla Ciebie.</li>
+                <li><b>T</b> – Time-bound: Określ termin realizacji.</li>
+              </ul>
+              <div className="example">
+                <strong>Przykład:</strong> "Przeczytam 12 książek w 2025 roku"
+              </div>
+            </div>
+            
+            <div className="hint-column">
+              <h4>Tożsamość - (Atomic Habits)</h4>
+              <ul>
+                <li><b>Wskazówka (Cue)</b>: Kiedy i gdzie wykonasz nawyk?</li>
+                <li><b>Pragnienie (Craving)</b>: Co sprawia, że jest atrakcyjny?</li>
+                <li><b>Reakcja (Response)</b>: Zacznij od małych kroków (2 min).</li>
+                <li><b>Nagroda (Reward)</b>: Jak utrzymasz motywację?</li>
+              </ul>
+              <div className="example">
+                <strong>Przykład:</strong> "Jestem osobą, która czyta codziennie"
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {showGoalForm && (
         <div className="inline-form">
@@ -284,26 +319,26 @@ export default function StatsHabits() {
             <article className="goal-card" key={g.id}>
               <header className="goal-card-head">
                 <h3 title={g.description || ""}>{g.title}</h3>
-                <div className="head-actions">
-                  <button
-                    type="button"
-                    className="btn small"
-                    onClick={() => setOpenFormFor(formOpen ? null : g.id)}
-                  >
-                    {formOpen ? "✕ Zamknij" : "➕ Dodaj nawyk"}
-                  </button>
-                  <button
-                    type="button"
-                    className="btn small danger"
-                    onClick={() => {
-                      setOpenDeleteForGoal(prev => prev === g.id ? null : g.id);
-                      setHabitToDelete(null);
-                    }}
-                  >
-                    🗑 Usuń nawyk
-                  </button>
-                </div>
               </header>
+              <div className="goal-card-actions">
+                <button
+                  type="button"
+                  className="btn small"
+                  onClick={() => setOpenFormFor(formOpen ? null : g.id)}
+                >
+                  {formOpen ? "✕ Zamknij" : "➕ Dodaj nawyk"}
+                </button>
+                <button
+                  type="button"
+                  className="btn small danger"
+                  onClick={() => {
+                    setOpenDeleteForGoal(prev => prev === g.id ? null : g.id);
+                    setHabitToDelete(null);
+                  }}
+                >
+                  🗑 Usuń nawyk
+                </button>
+              </div>
 
               {formOpen && (
                 <div className="inline-form">

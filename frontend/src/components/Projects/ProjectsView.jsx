@@ -63,6 +63,8 @@ export default function ProjectsView() {
   const [openTaskFormFor, setOpenTaskFormFor] = useState(null); // project_id
   const [openPopoverId, setOpenPopoverId] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [showDeleteProjectForm, setShowDeleteProjectForm] = useState(false);
+  const [projectToDelete, setProjectToDelete] = useState(null);
   const [err, setErr] = useState("");
 
   async function loadAll() {
@@ -111,11 +113,26 @@ export default function ProjectsView() {
     } catch (e) { console.error(e); }
   }
   async function removeTask(task) {
-    if (!confirm(`Usunąć zadanie „${task.title}”?`)) return;
+    if (!confirm(`Usunąć zadanie „${task.title}"?`)) return;
     try {
       await del(`${API}/tasks/${task.id}`);
       setTasks(ts => ts.filter(t => t.id !== task.id));
       if (openPopoverId === task.id) setOpenPopoverId(null);
+    } catch (e) { console.error(e); }
+  }
+
+  async function deleteProject(projectId) {
+    if (!projectId) return;
+    
+    if (!confirm("Czy na pewno chcesz usunąć ten projekt? Wszystkie zadania zostaną również usunięte.")) {
+      return;
+    }
+    
+    try {
+      await del(`${API}/projects/${projectId}`);
+      setProjectToDelete(null);
+      setShowDeleteProjectForm(false);
+      await loadAll();
     } catch (e) { console.error(e); }
   }
 
@@ -160,20 +177,58 @@ export default function ProjectsView() {
 
   return (
     <div className="projects-wrap">
-      <div className="panel-head">
-        {/* ✅ nagłówek z liczbą projektów */}
-        <h2>Liczba projektów: <span className="count">{projects.length}</span></h2>
+      <div className="projects-panel-head">
+        <div className="projects-panel-title">
+          <h2>Projekty</h2>
+          <button
+            type="button"
+            className="btn small"
+            title="Pokaż wskazówki"
+          >
+            ℹ️
+          </button>
+        </div>
         <div className="head-actions">
-          <button type="button" className="btn small" onClick={() => setShowProjectForm(v => !v)}>
+          <button 
+            type="button" 
+            className="btn small" 
+            onClick={() => setShowProjectForm(v => !v)}
+          >
             {showProjectForm ? "✕ Zamknij" : "➕ Dodaj projekt"}
           </button>
-          <button type="button" className="btn small" onClick={loadAll} disabled={loading}>
-            {loading ? "Odświeżanie…" : "⟳ Odśwież"}
+          <button 
+            type="button" 
+            className="btn small danger"
+            onClick={() => setShowDeleteProjectForm(v => !v)}
+          >
+            {showDeleteProjectForm ? "✕ Anuluj" : "🗑 Usuń projekt"}
           </button>
         </div>
       </div>
 
       {showProjectForm && <CreateProjectInline />}
+
+      {showDeleteProjectForm && (
+        <div className="inline-form">
+          <label style={{ marginRight: ".5rem" }}>Wybierz projekt do usunięcia:</label>
+          <select
+            value={projectToDelete ?? ""}
+            onChange={(e) => setProjectToDelete(e.target.value || null)}
+          >
+            <option value="">—</option>
+            {projects.map(p => <option key={p.id} value={p.id}>{p.title}</option>)}
+          </select>
+          <button
+            type="button"
+            className="btn small danger"
+            onClick={() => deleteProject(projectToDelete)}
+            disabled={!projectToDelete}
+            style={{ marginLeft: ".5rem" }}
+          >
+            Usuń wybrany
+          </button>
+        </div>
+      )}
 
       <div className="projects-grid">
         {projects.length === 0 && !err && <div className="empty">Brak projektów</div>}
@@ -234,7 +289,16 @@ export default function ProjectsView() {
                           aria-haspopup="dialog"
                           aria-expanded={open}
                         >
-                          <span className="dot" style={{ background: t.color || "#CCC" }} />
+                          <input
+                            type="checkbox"
+                            className="task-checkbox"
+                            checked={t.status}
+                            onChange={(e) => {
+                              e.stopPropagation();
+                              toggleDone(t);
+                            }}
+                            onClick={(e) => e.stopPropagation()}
+                          />
                           <span className="title">{t.title}</span>
 
                           {open && (

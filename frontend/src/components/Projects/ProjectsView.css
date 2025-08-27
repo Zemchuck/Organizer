@@ -3,8 +3,8 @@
 
 .projects-wrap { display: flex; flex-direction: column; gap: 1rem; }
 
-/* panel nagłówka */
-.panel-head {
+/* panel nagłówka projektów */
+.projects-panel-head {
   background: var(--panel);
   border: 1px solid var(--border);
   border-radius: 12px;
@@ -15,8 +15,9 @@
   align-items: center;
   gap: .75rem;
 }
-.panel-head h2 { margin: 0; color: var(--turquoise); font-family: "Oxanium", sans-serif; }
-.panel-head h2 .count { color: var(--white); font-weight: 700; margin-left: .35rem; }
+.projects-panel-head h2 { margin: 0; color: var(--turquoise); font-family: "Oxanium", sans-serif; }
+.projects-panel-head h2 .count { color: var(--white); font-weight: 700; margin-left: .35rem; }
+.projects-panel-title { display: flex; align-items: center; gap: .5rem; }
 .head-actions { display: flex; gap: .4rem; justify-content: flex-end; }
 .btn {
   height: 30px; padding: 0 .6rem; border-radius: 8px;
@@ -62,7 +63,7 @@
 /* siatka kart projektów */
 .projects-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  grid-template-columns: 1fr 1fr;
   gap: 1rem;
 }
 .project-card {
@@ -90,30 +91,75 @@
 }
 .count-badge strong { font-weight: 700; }
 
-/* lista zadań – numerowana */
+/* lista zadań – pełna szerokość */
 .task-list {
-  list-style: decimal;
-  margin: .25rem 0 0 1.25rem;
-  padding: .6rem .9rem 1rem .5rem;
-  display: flex; flex-direction: column; gap: .5rem;
+  list-style: none;
+  margin: 0;
+  padding: .6rem .9rem 1rem;
+  display: flex; 
+  flex-direction: column; 
+  gap: .5rem;
+  overflow: visible;
 }
-.task-list > li { padding-left: .25rem; }
+.task-list > li { 
+  padding: 0;
+  position: relative;
+}
 
 /* kafelek zadania + kolor */
 .task-item .task-chip {
   position: relative;
-  display: inline-flex;
+  display: flex;
   align-items: center;
-  gap: .5rem;
+  gap: .6rem;
   padding: .6rem .7rem;
   border-radius: .6rem;
   border: 1px solid var(--border);
   background: rgba(255,255,255,.03);
   cursor: pointer;
   outline: none;
+  width: 100%;
+  min-height: 44px;
 }
 .task-item.done .task-chip { opacity: .75; filter: grayscale(.15); }
+.task-item.done .task-chip .title {
+  text-decoration: line-through;
+  text-decoration-color: var(--turquoise);
+}
 .task-item .task-chip:focus-visible { box-shadow: 0 0 0 2px var(--focus); }
+
+.task-item .task-checkbox {
+  appearance: none;
+  width: 1.2rem;
+  height: 1.2rem;
+  border: 2px solid var(--border);
+  border-radius: 4px;
+  background: transparent;
+  cursor: pointer;
+  position: relative;
+  transition: all 0.2s ease;
+}
+
+.task-item .task-checkbox:hover {
+  border-color: var(--turquoise);
+  background: rgba(0, 255, 255, 0.1);
+}
+
+.task-item .task-checkbox:checked {
+  background: var(--turquoise);
+  border-color: var(--turquoise);
+}
+
+.task-item .task-checkbox:checked::after {
+  content: "✓";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: var(--panel);
+  font-size: 0.8rem;
+  font-weight: bold;
+}
 
 .task-item .dot {
   inline-size: .65rem; block-size: .65rem; border-radius: 50%;

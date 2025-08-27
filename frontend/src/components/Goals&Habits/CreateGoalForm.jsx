@@ -25,6 +25,7 @@ export default function CreateGoalForm({ onCreated, onCancel }) {
   const [description, setDescription] = useState("");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
+  const [showHints, setShowHints] = useState(false);
 
   async function submit(e) {
     e.preventDefault();
@@ -56,13 +57,54 @@ export default function CreateGoalForm({ onCreated, onCancel }) {
           <label htmlFor="cgf-title">
             Nazwa celu<span className="req" aria-hidden="true">*</span>:
           </label>
-          <input
-            id="cgf-title"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            placeholder="np. Kondycja"
-            required
-          />
+          <div className="input-with-hint">
+            <input
+              id="cgf-title"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              required
+            />
+            <button
+              type="button"
+              className="hint-btn"
+              onClick={() => setShowHints(!showHints)}
+              title="Pokaż wskazówki SMART"
+            >
+              ℹ️
+            </button>
+          </div>
+          {showHints && (
+            <div className="goal-hints-popover">
+              <div className="hints-grid">
+                <div className="hint-column">
+                  <h4>Wynik - Jak sformułować cel SMART?</h4>
+                  <ul>
+                    <li><b>S</b> – Specific: Cel musi być konkretny.</li>
+                    <li><b>M</b> – Measurable: Powinien dać się zmierzyć.</li>
+                    <li><b>A</b> – Achievable: Musi być realistyczny.</li>
+                    <li><b>R</b> – Relevant: Powinien być istotny dla Ciebie.</li>
+                    <li><b>T</b> – Time-bound: Określ termin realizacji.</li>
+                  </ul>
+                  <div className="example">
+                    <strong>Przykład:</strong> "Przeczytam 12 książek w 2025 roku"
+                  </div>
+                </div>
+                
+                <div className="hint-column">
+                  <h4>Tożsamość - (Atomic Habits)</h4>
+                  <ul>
+                    <li><b>Wskazówka (Cue)</b>: Kiedy i gdzie wykonasz nawyk?</li>
+                    <li><b>Pragnienie (Craving)</b>: Co sprawia, że jest atrakcyjny?</li>
+                    <li><b>Reakcja (Response)</b>: Zacznij od małych kroków (2 min).</li>
+                    <li><b>Nagroda (Reward)</b>: Jak utrzymasz motywację?</li>
+                  </ul>
+                  <div className="example">
+                    <strong>Przykład:</strong> "Jestem osobą, która czyta codziennie"
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
 
         <div className="form-group full">
@@ -71,7 +113,6 @@ export default function CreateGoalForm({ onCreated, onCancel }) {
             id="cgf-desc"
             value={description}
             onChange={(e) => setDescription(e.target.value)}
-            placeholder="krótki opis"
           />
         </div>
 
