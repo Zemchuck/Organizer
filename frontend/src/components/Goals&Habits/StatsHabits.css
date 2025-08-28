@@ -1,0 +1,347 @@
+@import '../../styles/variables.css';
+@import '../../styles/utilities.css';
+
+/* Layout */
+.stats-habits {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+/* Panel head dla celów i nawyków */
+.goals-panel-head {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  box-shadow: var(--shadow);
+  padding: .7rem .9rem;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: .75rem;
+}
+
+.goals-panel-title h2 {
+  margin: 0;
+  font-size: 1.15rem;
+}
+
+
+
+.goals-panel-head .head-actions {
+  display: flex;
+  gap: .4rem;
+}
+
+/* Instrukcje dla celów i nawyków */
+.goals-hints-popover {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  box-shadow: var(--shadow);
+  padding: 1rem;
+  margin-bottom: 1rem;
+}
+
+.hints-intro {
+  text-align: center;
+  margin-bottom: 1rem;
+  color: var(--turquoise);
+  font-weight: 600;
+  font-size: 1rem;
+}
+
+.hints-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+}
+
+.hint-column h4 {
+  margin: 0 0 .5rem 0;
+  color: var(--turquoise);
+  font-size: 1rem;
+}
+
+.hint-column ul {
+  margin: 0 0 .5rem 0;
+  padding-left: 1.2rem;
+  font-size: .9rem;
+  line-height: 1.4;
+}
+
+.hint-column li {
+  margin-bottom: .3rem;
+}
+
+.hint-column .example {
+  background: rgba(255, 255, 255, .05);
+  padding: .5rem;
+  border-radius: 6px;
+  font-size: .85rem;
+  border-left: 3px solid var(--turquoise);
+}
+
+/* Buttons helpers (fallback) */
+.btn {
+  border: 1px solid var(--border);
+  background: var(--surface, #202225);
+  padding: .35rem .6rem;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.btn.small {
+  font-size: .9rem;
+}
+
+.btn.danger {
+  border-color: rgba(255, 99, 71, .4);
+  color: #ff8a75;
+}
+
+.btn:disabled {
+  opacity: .6;
+  cursor: default;
+}
+
+/* Inline forms under headers */
+.inline-form {
+  padding: .7rem .9rem;
+  border: 1px dashed var(--border);
+  border-top: none;
+  border-radius: 0 0 12px 12px;
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  background: rgba(255, 255, 255, .02);
+}
+
+/* Goal cards grid */
+.goals-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: .9rem;
+  overflow: visible;
+  /* pozwól popoverom wychodzić */
+}
+
+.goal-card {
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--panel);
+  box-shadow: var(--shadow);
+  overflow: visible;
+  /* było: hidden – utnie popover */
+}
+
+.goal-card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: .6rem;
+  padding: .7rem .9rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.goal-card-head h3 {
+  margin: 0;
+  color: var(--turquoise, #6cf0e6);
+  font-family: "Oxanium", ui-sans-serif, system-ui;
+  font-size: 1.05rem;
+  word-wrap: break-word;
+  line-height: 1.3;
+}
+
+.goal-card-actions {
+  display: flex;
+  justify-content: space-between;
+  gap: .6rem;
+  padding: .5rem .9rem;
+  border-bottom: 1px solid var(--border);
+}
+
+/* Habit list */
+.habit-list {
+  list-style: none;
+  margin: 0;
+  padding: .6rem .9rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: .5rem;
+  overflow: visible;
+}
+
+.habit-item {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  position: relative;
+  /* kotwica dla popovera */
+}
+
+/* CHIP — pełna szerokość, jedno-liniowy, responsywny */
+.habit-item .habit-chip {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: .6rem;
+  padding: .6rem .7rem;
+  border-radius: .6rem;
+  border: 1px solid var(--border);
+  cursor: pointer;
+  outline: none;
+  background: rgba(255, 255, 255, .03);
+  width: 100%;
+  min-height: 44px;
+  /* wygodna wysokość */
+  overflow: hidden;
+  /* nic nie wychodzi poza guzik */
+  line-height: 1.25;
+  /* skaluje CAŁĄ zawartość chipa delikatnie z viewportem */
+  font-size: clamp(.92rem, .86rem + .25vw, 1.05rem);
+}
+
+/* LEWA kropka w kolorze nawyku */
+.habit-item .dot {
+  flex: 0 0 auto;
+  inline-size: .68rem;
+  block-size: .68rem;
+  border-radius: 50%;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, .25) inset;
+}
+
+/* TYTUŁ — nie zawija się, elipsa, może się ścisnąć */
+.habit-item .title {
+  flex: 1 1 auto;
+  /* tytuł zajmuje resztę miejsca */
+  min-width: 0;
+  /* KLUCZ do elipsy w flexboxie */
+  white-space: nowrap;
+  /* bez zawijania */
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: clamp(.90rem, .85rem + .30vw, 1.06rem);
+}
+
+/* PRAWY licznik — nie ściska się i nie zawija */
+.habit-item .streak {
+  flex: 0 0 auto;
+  /* nie zmniejszaj prawej części */
+  margin-left: .5rem;
+  white-space: nowrap;
+  font-size: clamp(.80rem, .76rem + .25vw, .95rem);
+  opacity: .85;
+  display: inline-flex;
+  align-items: center;
+  gap: .35rem;
+}
+
+.habit-item .streak .flame {
+  line-height: 1;
+}
+
+/* POPOVER — po PRAWEJ stronie chipa; może wyjść poza kartę */
+.habit-popover {
+  position: absolute;
+  left: calc(100% + 12px) !important;
+  /* prawa krawędź chipa */
+  top: 50% !important;
+  /* środek w pionie */
+  transform: translateY(-50%) scale(.98);
+  opacity: 0;
+
+  z-index: 60;
+  min-width: 240px;
+  max-width: min(360px, 40vw);
+  pointer-events: none;
+  /* hover nie „zrywa” */
+  transition: opacity .16s ease, transform .18s ease;
+  filter: drop-shadow(0 10px 24px rgba(0, 0, 0, .35));
+}
+
+.habit-item:hover .habit-popover {
+  opacity: 1;
+  transform: translateY(-50%) translateX(0);
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+
+  .habit-popover,
+  .habit-item:hover .habit-popover {
+    transition: none;
+    transform: translateY(-50%);
+  }
+}
+
+/* Empty & error */
+.empty {
+  opacity: .7;
+  text-align: center;
+  border: 1px dashed var(--border);
+  border-radius: 8px;
+  padding: .6rem;
+}
+
+.empty.small {
+  padding: .5rem;
+  font-size: .9rem;
+}
+
+.form-error {
+  color: #ffb3ad;
+  background: rgba(255, 99, 71, .1);
+  border: 1px solid rgba(255, 99, 71, .35);
+  border-radius: 8px;
+  padding: .5rem .7rem;
+  margin-top: .5rem;
+}
+
+/* Fallback zmiennych */
+:root {
+  --panel: rgba(255, 255, 255, .02);
+  --border: rgba(255, 255, 255, .12);
+  --shadow: 0 2px 18px rgba(0, 0, 0, .25);
+}
+
+.panel-head .head-actions .btn,
+.goal-card-head .head-actions .btn {
+  display: inline-flex;
+  /* ikona + tekst w jednej linii */
+  align-items: center;
+  justify-content: center;
+  gap: .4rem;
+  /* odstęp ikony od tekstu */
+  white-space: nowrap;
+  /* <-- najważniejsze: nie zawijaj */
+  line-height: 1;
+  /* kompaktowy wiersz */
+  min-height: 34px;
+  padding: .38rem .62rem;
+}
+
+/* Jeżeli globalna .btn ma inne wymuszenia szerokości, zabezpiecz: */
+.panel-head .head-actions .btn,
+.goal-card-head .head-actions .btn {
+  width: auto;
+  max-width: 100%;
+}
+
+/* --- Dodatkowe bezpieczniki dla chipa nawyku --- */
+.habit-item .habit-chip {
+  overflow: hidden;
+}
+
+/* nic nie wyjdzie poza guzik */
+.habit-item .title {
+  flex: 1 1 auto;
+  min-width: 0;
+  white-space: nowrap;
+}
+
+.habit-item .streak {
+  flex: 0 0 auto;
+  white-space: nowrap;
+}

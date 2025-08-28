@@ -1,0 +1,70 @@
+@import '../../styles/variables.css';
+@import '../../styles/utilities.css';
+
+.month-table {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+
+.month-table table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.month-table thead th {
+  text-align: left;
+  padding: .6rem .7rem;
+  border-bottom: 1px solid var(--border);
+  color: var(--turquoise);
+  font-family: "Oxanium", sans-serif;
+}
+
+.month-table tbody td {
+  vertical-align: top;
+  padding: .55rem .7rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.col-date {
+  white-space: nowrap;
+  font-weight: 700;
+  opacity: .9;
+}
+
+.col-items {
+  display: flex;
+  flex-direction: column;
+  gap: .25rem;
+}
+
+.row-item {
+  display: inline-flex;
+  align-items: center;
+  gap: .45rem;
+  padding: .2rem .45rem;
+  border-radius: 7px;
+  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, .04);
+  max-width: 100%;
+}
+
+.row-item .dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.row-item .time {
+  font-variant-numeric: tabular-nums;
+  opacity: .85;
+}
+
+.row-item .title {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

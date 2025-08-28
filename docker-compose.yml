@@ -1,0 +1,38 @@
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: organizer-backend
+    environment:
+      # Użyj w kodzie, np. os.getenv("DATABASE_URL")
+      DATABASE_URL: sqlite:////app/data/calendar.db
+    volumes:
+      - ./backend:/app            # hot-reload kodu (dev)
+      - ./backend/data:/app/data  # PERSISTENCJA bazy na hoście
+    ports:
+      - "8000:8000"
+    command: >
+      sh -c "python init_db.py &&
+             uvicorn main:app --host 0.0.0.0 --port 8000 --reload"
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:8000/docs"]
+      interval: 10s
+      timeout: 3s
+      retries: 10
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: organizer-frontend
+    environment:
+      # jeśli używasz w kodzie, np. import.meta.env.VITE_API_URL
+      VITE_API_URL: http://localhost:8000
+    ports:
+      - "5173:5173"
+    depends_on:
+      backend:
+        condition: service_started
+    volumes:
+      - ./frontend:/app           # HMR dla dev

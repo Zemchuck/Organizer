@@ -1,0 +1,20 @@
+@import '../Projects/SingleTaskForm.css';
+@import '../../styles/variables.css';
+@import '../../styles/utilities.css';
+
+/* ✅ Poprawne wyświetlanie koloru w pickerze (WebKit/Firefox) */
+.single-task-form input[type="color"] {
+  padding: 0;             /* usuń padding, żeby nie „zabielać" próbnika */
+  height: 30px;
+  width: 30px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+.single-task-form input[type="color"]::-webkit-color-swatch-wrapper { padding: 0; border-radius: 6px; }
+.single-task-form input[type="color"]::-webkit-color-swatch         { border: 1px solid var(--border); border-radius: 6px; }
+.single-task-form input[type="color"]::-moz-color-swatch             { border: 1px solid var(--border); border-radius: 6px; }
+
+
+
+/* Drobne: gwiazdka przy wymaganych */
+.req { color: var(--turquoise); font-weight: 700; }

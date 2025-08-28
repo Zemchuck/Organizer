@@ -1,0 +1,138 @@
+/* ===== Responsive Utilities ===== */
+
+/* Responsive wrapper classes */
+.responsive-wrapper {
+  width: 100%;
+}
+
+.responsive-wrapper.mobile {
+  font-size: 14px;
+}
+
+.responsive-wrapper.tablet {
+  font-size: 15px;
+}
+
+.responsive-wrapper.desktop {
+  font-size: 16px;
+}
+
+.responsive-wrapper.wide {
+  font-size: 16px;
+}
+
+/* Container queries (future-proof) */
+@container (max-width: 400px) {
+  .container-adaptive {
+    font-size: 14px;
+  }
+}
+
+/* Touch-friendly interactions */
+@media (hover: none) and (pointer: coarse) {
+  /* Zwiększ rozmiary przycisków na urządzeniach dotykowych */
+  button,
+  .nav-link,
+  .event-block {
+    min-height: 44px;
+    min-width: 44px;
+  }
+  
+  /* Większe odstępy między elementami */
+  .app-nav {
+    gap: 0.6rem;
+  }
+  
+  .event-block {
+    padding: 0.2rem 0.4rem;
+  }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  :root {
+    --border: rgba(255, 255, 255, 0.3);
+    --border-strong: rgba(255, 255, 255, 0.5);
+  }
+  
+  :root[data-theme="light"] {
+    --border: rgba(0, 0, 0, 0.3);
+    --border-strong: rgba(0, 0, 0, 0.5);
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Landscape orientation on mobile */
+@media (max-width: 768px) and (orientation: landscape) {
+  .app-header {
+    padding: 0.3rem 0.7rem;
+  }
+  
+  .app-content {
+    padding: 0.5rem;
+  }
+  
+  .week-view {
+    max-height: 70vh;
+  }
+}
+
+/* Print styles */
+@media print {
+  .app-header,
+  .theme-toggle,
+  .event-pop {
+    display: none !important;
+  }
+  
+  .week-view {
+    width: 100% !important;
+    overflow: visible !important;
+  }
+  
+  .week-head,
+  .week-grid {
+    min-width: auto !important;
+    page-break-inside: avoid;
+  }
+  
+  .event-block {
+    border: 1px solid #000 !important;
+    background: #fff !important;
+    color: #000 !important;
+  }
+}
+
+/* Focus indicators for accessibility */
+@media (prefers-reduced-motion: no-preference) {
+  .nav-link:focus-visible,
+  .event-block:focus-visible,
+  button:focus-visible {
+    outline: 2px solid var(--turquoise);
+    outline-offset: 2px;
+    transition: outline-offset 0.2s ease;
+  }
+}
+
+/* Dark mode preference detection */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme]) {
+    color-scheme: dark;
+  }
+}
+
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme]) {
+    color-scheme: light;
+  }
+}

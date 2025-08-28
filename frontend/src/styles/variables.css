@@ -1,13 +1,156 @@
-:root {
-  /* Kolory motywu */
-  --graphite: #121212;
-  --turquoise: #00e5ff;
-  --purple: #bb86fc;
-  --gray: #b0bec5;
-  --white: #ffffff;
-  --panel: rgba(255, 255, 255, 0.04);
+/* ===== Design Tokens =====
+   Domyślny motyw: DARK
+   Dodatkowe motywy: LIGHT, NEON
+*/
 
-  /* Wysokość podstawowa */
-  --field-height: 40px;
+/* --- DARK (default) --- */
+:root {
+  /* surfaces */
+  --bg: #0d0f14;
+  --panel: #151922;
+  --panel-elev: #1c222b;
+  --graphite: #0d0f14;
+
+  /* text */
+  --text: rgba(255, 255, 255, .92);
+  --text-muted: rgba(255, 255, 255, .75);
+  --gray: rgba(255, 255, 255, .65);
+
+  /* accents */
+  --turquoise: #40e0d0;
+  --purple: #b37dff;
+  --white: #ffffff;
+
+  /* borders/shadows */
+  --border: rgba(255, 255, 255, .12);
+  --border-strong: rgba(255, 255, 255, .18);
+  --shadow: 0 4px 14px rgba(0, 0, 0, .6);
+
+  /* layout – calendar */
+  --cal-width: min(100%, 960px);
+  /* wspólna szerokość headera i grida */
+  --field-height: 30px;
+  /* wysokość 1h (WeekView) */
+  --hours-col-w: 56px;
+  /* lewa kolumna godzin (Week/Day) */
+  --gutter-w: var(--hours-col-w);
+  --hour-h: var(--field-height);
+
+  /* grid lines */
+  --grid-major: rgba(255, 255, 255, .25);
+  --grid-major-w: 2px;
+  --grid-minor: rgba(255, 255, 255, .12);
+  --grid-minor-w: 1px;
+  --grid-vert: rgba(255, 255, 255, .18);
+
+  /* now line */
+  --now: #ff4d4f;
+
+  /* Responsive breakpoints */
+  --mobile: 480px;
+  --tablet: 768px;
+  --desktop: 1024px;
+  --wide: 1200px;
 }
 
+/* --- LIGHT --- */
+:root[data-theme="light"] {
+  /* surfaces */
+  --bg: #f8fafc;
+  --panel: #ffffff;
+  --panel-elev: #f1f5f9;
+  --graphite: #e2e8f0;
+
+  /* text */
+  --text: #1e293b;
+  --text-muted: #475569;
+  --gray: #64748b;
+
+  /* accents */
+  --turquoise: #0d9488;
+  --purple: #7c3aed;
+  --white: #1e293b;
+
+  /* borders/shadows */
+  --border: rgba(0, 0, 0, .12);
+  --border-strong: rgba(0, 0, 0, .18);
+  --shadow: 0 4px 14px rgba(0, 0, 0, .1);
+
+  /* grid lines */
+  --grid-major: rgba(0, 0, 0, .25);
+  --grid-major-w: 2px;
+  --grid-minor: rgba(0, 0, 0, .12);
+  --grid-minor-w: 1px;
+  --grid-vert: rgba(0, 0, 0, .18);
+
+  /* now line */
+  --now: #dc2626;
+}
+
+/* --- NEON --- */
+:root[data-theme="neon"] {
+  --bg: #04040a;
+  --panel: #0b0c16;
+  --panel-elev: #11121f;
+  --graphite: #06070d;
+
+  --text: #e2f2ff;
+  --text-muted: #a6b3c7;
+  --gray: #9aa6bf;
+
+  --turquoise: #00ffd1;
+  --purple: #9c5bff;
+  --white: #ffffff;
+
+  --border: rgba(0, 255, 209, .18);
+  --border-strong: rgba(156, 91, 255, .28);
+  --shadow: 0 6px 18px rgba(0, 255, 209, .12);
+
+  /* grid lines – neon vibe */
+  --grid-major: rgba(0, 255, 209, .28);
+  --grid-major-w: 2px;
+  --grid-minor: rgba(0, 255, 209, .18);
+  --grid-minor-w: 1px;
+  --grid-vert: rgba(156, 91, 255, .25);
+
+  --now: #ff3b6b;
+}
+
+/* --- Responsive utilities --- */
+@media (max-width: 480px) {
+  :root {
+    --cal-width: 100%;
+    --hours-col-w: 40px;
+    --field-height: 25px;
+    --gutter-w: var(--hours-col-w);
+    --hour-h: var(--field-height);
+  }
+}
+
+@media (min-width: 481px) and (max-width: 768px) {
+  :root {
+    --cal-width: 100%;
+    --hours-col-w: 48px;
+    --field-height: 28px;
+    --gutter-w: var(--hours-col-w);
+    --hour-h: var(--field-height);
+  }
+}
+
+@media (min-width: 769px) and (max-width: 1024px) {
+  :root {
+    --cal-width: min(100%, 900px);
+    --hours-col-w: 52px;
+    --field-height: 30px;
+    --gutter-w: var(--hours-col-w);
+    --hour-h: var(--field-height);
+  }
+}
+
+/* --- Global usage --- */
+html,
+body,
+#root {
+  background: var(--bg);
+  color: var(--text);
+}

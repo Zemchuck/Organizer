@@ -1,11 +1,13 @@
-// src/components/EisenhowerMatrix.jsx
+// src/components/EisenhowerMatrix.jsx
 import React, { useEffect, useState } from "react";
-import "./EisenhowerMatrix.css"; // Assuming you have a CSS file for styling
+import "./EisenhowerMatrix.css";
+
+const API = import.meta.env.VITE_API_URL || "/api";
 
 export default function EisenhowerMatrix() {
   const [tasks, setTasks] = useState([]);
   useEffect(() => {
-    fetch("http://localhost:8000/tasks/all")
+    fetch(`${API}/tasks/all`)
       .then((r) => r.json())
       .then(setTasks);
   }, []);

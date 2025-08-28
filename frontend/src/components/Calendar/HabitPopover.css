@@ -1,0 +1,189 @@
+/* ==========================================================================
+   HabitPopover - Dedykowany komponent popovera dla nawyków
+   ========================================================================== */
+
+.habit-popover-container {
+  position: relative;
+  width: 100%;
+  height: auto;
+  z-index: 1;
+}
+
+.habit-popover {
+  position: relative;
+  width: 100%;
+  min-width: 0;
+  max-width: none;
+  background: var(--panel-elev, #1c222b);
+  color: var(--text, #ffffff);
+  border: 2px solid var(--ev-color, var(--border-strong, #4a5568));
+  border-radius: 12px;
+  padding: 1rem 1.2rem;
+  box-shadow: 0 20px 40px rgba(0,0,0,.5);
+  z-index: 1;
+}
+
+/* ==========================================================================
+   Struktura popovera
+   ========================================================================== */
+
+.popover-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 0.75rem;
+  gap: 0.5rem;
+}
+
+.popover-title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--text, #ffffff);
+  flex: 1;
+  line-height: 1.3;
+}
+
+.status {
+  font-size: 0.8rem;
+  font-weight: 600;
+  padding: 0.2rem 0.5rem;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--text, #ffffff);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.popover-desc {
+  margin-bottom: 0.75rem;
+  font-size: 0.9rem;
+  line-height: 1.4;
+  color: var(--text-muted, #a0aec0);
+  opacity: 0.9;
+}
+
+.popover-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  margin-bottom: 1rem;
+  font-size: 0.85rem;
+  color: var(--gray, #718096);
+}
+
+.popover-meta span {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.popover-actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+/* ==========================================================================
+   Przyciski akcji
+   ========================================================================== */
+
+.pop-btn {
+  all: unset;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.5rem 0.8rem;
+  border: 1px solid var(--border, #4a5568);
+  border-radius: 8px;
+  font-family: inherit;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text, #ffffff);
+  background: transparent;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-height: 36px;
+  white-space: nowrap;
+}
+
+.pop-btn:hover {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: var(--border-strong);
+  transform: translateY(-1px);
+}
+
+.pop-btn:active {
+  transform: translateY(0);
+}
+
+.pop-btn.primary {
+  background: color-mix(in srgb, var(--ev-color, var(--turquoise)) 30%, transparent);
+  border-color: var(--ev-color, var(--turquoise));
+  color: var(--ev-color, var(--turquoise));
+  font-weight: 700;
+}
+
+.pop-btn.primary:hover {
+  background: color-mix(in srgb, var(--ev-color, var(--turquoise)) 85%, white);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.pop-btn.danger {
+  border-color: #ff4d4f;
+  color: #ff4d4f;
+}
+
+.pop-btn.danger:hover {
+  background: rgba(255, 77, 79, 0.1);
+  border-color: #ff6b6b;
+  color: #ff6b6b;
+}
+
+/* ==========================================================================
+   Responsive
+   ========================================================================== */
+
+@media (max-width: 768px) {
+  .habit-popover {
+    padding: 0.8rem 1rem;
+  }
+  
+  .popover-head {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.3rem;
+  }
+  
+  .status {
+    align-self: flex-start;
+  }
+  
+  .popover-actions {
+    flex-direction: column;
+  }
+  
+  .pop-btn {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .habit-popover {
+    padding: 0.7rem 0.9rem;
+  }
+  
+  .popover-title {
+    font-size: 1rem;
+  }
+  
+  .popover-meta {
+    font-size: 0.8rem;
+  }
+  
+  .pop-btn {
+    font-size: 0.8rem;
+    padding: 0.4rem 0.7rem;
+    min-height: 32px;
+  }
+}

@@ -1,0 +1,172 @@
+@import '../../styles/variables.css';
+@import '../../styles/utilities.css';
+
+/* kontener dopasowany szerokością do toolbara (var(--cal-width)) */
+.month-shell {
+  display: grid;
+  gap: .6rem;
+  width: var(--cal-width, min(100%, 960px));
+  margin: 0 auto;
+}
+
+/* prosty pasek akcji (stylistycznie jak w WeekView) */
+.month-toolbar {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+}
+
+.right-actions {
+  display: inline-flex;
+  gap: .5rem;
+}
+
+.btn.ghost {
+  height: 32px;
+  padding: 0 .8rem;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--white);
+}
+
+.btn.ghost:hover {
+  background: rgba(255, 255, 255, .06);
+  border-color: var(--border-strong);
+}
+
+/* KARTA z siatką miesiąca (jak panel WeekView) */
+.month-grid-card {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+
+/* nagłówek dni tygodnia */
+.month-grid-head {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  border-bottom: 1px solid var(--border);
+}
+
+.head-cell {
+  text-align: center;
+  padding: .45rem 0;
+  color: var(--white);
+  font-weight: 800;
+  border-right: 1px solid var(--border);
+}
+
+.head-cell:last-child {
+  border-right: none;
+}
+
+/* ciało siatki */
+.month-grid-body {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+}
+
+.day-cell {
+  min-height: 110px;
+  border-right: 1px solid var(--border);
+  border-top: 1px solid var(--border);
+  padding: .45rem .5rem;
+  position: relative;
+}
+
+.day-cell:nth-child(-n+7) {
+  border-top: none;
+}
+
+.day-cell:nth-child(7n) {
+  border-right: none;
+}
+
+.day-cell.muted {
+  opacity: .65;
+}
+
+.day-cell.selected {
+  outline: 2px solid var(--turquoise);
+  outline-offset: -2px;
+  border-radius: 6px;
+}
+
+/* góra komórki */
+.day-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  color: var(--white);
+  font-weight: 700;
+}
+
+.mini-add {
+  height: 24px;
+  min-width: 24px;
+  display: inline-grid;
+  place-items: center;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: transparent;
+  color: var(--white);
+}
+
+.mini-add:hover {
+  background: rgba(255, 255, 255, .06);
+  border-color: var(--border-strong);
+}
+
+/* mini-bloczki (task/habit) */
+.mini-items {
+  margin-top: .45rem;
+  display: grid;
+  grid-auto-rows: 10px;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 6px;
+  align-content: start;
+}
+
+.mini-block {
+  height: 10px;
+  border-radius: 3px;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, .12) inset;
+}
+
+.mini-block.habit {
+  position: relative;
+}
+
+.mini-block.habit::before,
+.mini-block.habit::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(45deg, rgba(0, 0, 0, .35) 0 1px, transparent 1px 100%),
+    linear-gradient(-45deg, rgba(0, 0, 0, .35) 0 1px, transparent 1px 100%);
+  opacity: .6;
+}
+
+/* „+N jeszcze” w komórce dnia */
+.mini-more {
+  display: inline-grid;
+  place-items: center;
+  height: 10px;
+  padding: 0 4px;
+  border: 1px dashed var(--border);
+  border-radius: 3px;
+  background: transparent;
+  color: var(--white);
+  font-size: 10px;
+  line-height: 10px;
+  cursor: pointer;
+}
+
+.mini-more:hover {
+  background: rgba(255, 255, 255, .06);
+  border-color: var(--border-strong);
+}
