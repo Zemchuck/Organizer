@@ -210,5 +210,3 @@ frontend/build/
 ehthumbs.db
 Thumbs.db
 
-# Docker
-.dockerignore
